@@ -4,8 +4,8 @@ import (
 	"regexp"
 	"time"
 
-	"wikigo/internal/common/errors"
-	"wikigo/internal/revisions"
+	"wikirego/internal/common/errors"
+	"wikirego/internal/revisions"
 
 	"github.com/go-playground/validator/v10"
 )

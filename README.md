@@ -1,6 +1,6 @@
-# WikiGO
+# wiki rego
 
-[![Go Server CI](https://github.com/dannyswat/wikigo/actions/workflows/go.yml/badge.svg)](https://github.com/dannyswat/wikigo/actions/workflows/go.yml) [![React Client CI](https://github.com/dannyswat/wikigo/actions/workflows/react.yml/badge.svg)](https://github.com/dannyswat/wikigo/actions/workflows/react.yml) [![Docker Build](https://github.com/dannyswat/wikigo/actions/workflows/docker.yml/badge.svg)](https://github.com/dannyswat/wikigo/actions/workflows/docker.yml)
+[![Go Server CI](https://github.com/dannyswat/wikirego/actions/workflows/go.yml/badge.svg)](https://github.com/dannyswat/wikirego/actions/workflows/go.yml) [![React Client CI](https://github.com/dannyswat/wikirego/actions/workflows/react.yml/badge.svg)](https://github.com/dannyswat/wikirego/actions/workflows/react.yml) [![Docker Build](https://github.com/dannyswat/wikirego/actions/workflows/docker.yml/badge.svg)](https://github.com/dannyswat/wikirego/actions/workflows/docker.yml)
 
 A lightweight, file-based wiki application written in Go with a React front-end. It supports markdown editing, page revisions, user authentication, and inline Excalidraw diagrams.
 
@@ -24,22 +24,22 @@ A lightweight, file-based wiki application written in Go with a React front-end.
 
 ## Quick Start (Docker)
 
-An official Docker image is available on Docker Hub: `dannyswat/wikigo`
+An official Docker image is available on Docker Hub: `dannyswat/wikirego`
 
 ### 1. Run with Docker
 
 ```bash
 # Pull the latest image
-docker pull dannyswat/wikigo:latest
+docker pull dannyswat/wikirego:latest
 
 # Start container (maps port 8080)
 docker run -d \
-  --name wikigo \
+  --name wikirego \
   -p 8080:8080 \
   -v $(pwd)/server/data:/app/data \
   -v $(pwd)/server/media:/app/media \
   -v $(pwd)/server/conf:/app/conf \
-  dannyswat/wikigo:latest
+  dannyswat/wikirego:latest
 ```
 
 The application will be available at http://localhost:8080
@@ -53,7 +53,7 @@ A `docker-compose.yml` is provided for convenience:
 docker-compose up -d --build
 ```
 
-This will build (if needed) and start the `wikigo` service, mounting `server/data` and `server/media` for persistence.
+This will build (if needed) and start the `wikirego` service, mounting `server/data` and `server/media` for persistence.
 
 ---
 
@@ -71,7 +71,7 @@ This will build (if needed) and start the `wikigo` service, mounting `server/dat
 # From project root
 # 1) Build server
 cd server
-go build -o wikigo.exe ./cmd/web/main.go
+go build -o wikirego.exe ./cmd/web/main.go
 
 # 2) Build client
 cd ../client
@@ -101,14 +101,14 @@ copy release\* build
 mkdir build\public
 copy server\public\* build\public
 cd server
-go build -o ..\build\wikigo.exe
+go build -o ..\build\wikirego.exe
 cd ..\client
 npm install
 npm run build
 copy dist\* ..\build\public
 ```
 
-Run `build.bat` and then launch `build\wikigo.exe`.
+Run `build.bat` and then launch `build\wikirego.exe`.
 
 ---
 
@@ -121,11 +121,6 @@ The application reads files from:
 - **Conf**: `server/conf` (for configuration)
 - **Views**: `server/views` (HTML templates)
 - **Public**: `server/public` (static assets from React build)
-
-You can override default settings via environment variables:
-
-- `APP_PORT`: HTTP port (default `8080`)
-- `GIN_MODE`: `release` or `debug` (for logging)
 
 ---
 

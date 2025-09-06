@@ -4,10 +4,10 @@ import (
 	"log"
 	"strconv"
 
-	"wikigo/internal/common/apihelper"
-	"wikigo/internal/common/errors"
-	"wikigo/internal/pages"
-	"wikigo/internal/revisions"
+	"wikirego/internal/common/apihelper"
+	"wikirego/internal/common/errors"
+	"wikirego/internal/pages"
+	"wikirego/internal/revisions"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"

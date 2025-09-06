@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"net/http"
-	"wikigo/internal/setting"
+	"wikirego/internal/setting"
 
 	"github.com/labstack/echo/v4"
 )

@@ -3,8 +3,8 @@ package apihelper
 import (
 	"log"
 
-	"wikigo/internal/common/errors"
-	"wikigo/internal/users"
+	"wikirego/internal/common/errors"
+	"wikirego/internal/users"
 
 	"github.com/labstack/echo/v4"
 )

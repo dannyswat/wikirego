@@ -28,7 +28,7 @@ export default function SettingProvider({ children, setup }: SettingProviderProp
         getSetting().then((res) => {
             if (res.is_admin_created && res.is_setup_complete) {
                 updateSetting(res.setting);
-                document.title = res.setting.site_name || "Wiki Go";
+                document.title = res.setting.site_name || "wiki rego";
                 document.documentElement.lang = res.setting.language || "en";
                 i18n.changeLanguage(res.setting.language || "en");
 

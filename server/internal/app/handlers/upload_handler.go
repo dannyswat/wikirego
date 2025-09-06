@@ -12,10 +12,10 @@ import (
 	"strings"
 	"time"
 
-	"wikigo/internal/common/apihelper"
-	"wikigo/internal/common/errors"
-	"wikigo/internal/filemanager"
-	"wikigo/internal/images"
+	"wikirego/internal/common/apihelper"
+	"wikirego/internal/common/errors"
+	"wikirego/internal/filemanager"
+	"wikirego/internal/images"
 
 	"github.com/labstack/echo/v4"
 )

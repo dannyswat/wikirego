@@ -1,4 +1,4 @@
-module wikigo
+module wikirego
 
 go 1.23.0
 

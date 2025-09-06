@@ -6,9 +6,9 @@ import (
 	"os"
 	"strings"
 
-	wiki "wikigo/internal/app"
-	"wikigo/internal/app/handlers"
-	"wikigo/internal/app/middlewares"
+	wiki "wikirego/internal/app"
+	"wikirego/internal/app/handlers"
+	"wikirego/internal/app/middlewares"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"

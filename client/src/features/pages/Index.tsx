@@ -11,7 +11,7 @@ export default function Index() {
 
     useEffect(() => {
         if (data?.title)
-            document.title = data.title + ' - Wiki GO';
+            document.title = data.title + ' - wiki rego';
     }, [data?.title]);
 
     if (isLoading) return <div>{t("Loading")}</div>;

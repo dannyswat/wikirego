@@ -3,7 +3,7 @@ package repositories
 import (
 	"strconv"
 
-	"wikigo/internal/pages"
+	"wikirego/internal/pages"
 
 	"github.com/dannyswat/filedb"
 )

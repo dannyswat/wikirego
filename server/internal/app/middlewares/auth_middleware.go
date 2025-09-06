@@ -1,9 +1,9 @@
 package middlewares
 
 import (
-	"wikigo/internal/common/apihelper"
-	"wikigo/internal/common/errors"
-	"wikigo/internal/keymgmt"
+	"wikirego/internal/common/apihelper"
+	"wikirego/internal/common/errors"
+	"wikirego/internal/keymgmt"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"

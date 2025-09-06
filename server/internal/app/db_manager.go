@@ -2,12 +2,12 @@ package wiki
 
 import (
 	"path/filepath"
-	"wikigo/internal/app/repositories"
-	"wikigo/internal/keymgmt"
-	"wikigo/internal/pages"
-	"wikigo/internal/revisions"
-	"wikigo/internal/setting"
-	"wikigo/internal/users"
+	"wikirego/internal/app/repositories"
+	"wikirego/internal/keymgmt"
+	"wikirego/internal/pages"
+	"wikirego/internal/revisions"
+	"wikirego/internal/setting"
+	"wikirego/internal/users"
 )
 
 type DBManager interface {

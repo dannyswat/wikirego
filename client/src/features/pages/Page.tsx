@@ -31,7 +31,7 @@ export default function Page() {
     findItemInTree(buildTree(allPages), data.url) : null), [allPages, data]);
 
   useEffect(() => {
-    const siteName = setting?.site_name || "Wiki GO";
+    const siteName = setting?.site_name || "wiki rego";
     if (data?.title) document.title = data.title + " - " + siteName;
     else document.title = siteName;
   }, [data?.title]);

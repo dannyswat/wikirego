@@ -1,6 +1,6 @@
 {
     "id": "localhost",
-    "display_name": "Wiki GO",
+    "display_name": "wiki rego",
     "hosts": [
         "http://localhost:3000",
         "http://localhost:8080"

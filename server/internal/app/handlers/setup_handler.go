@@ -2,9 +2,9 @@ package handlers
 
 import (
 	"time"
-	"wikigo/internal/common"
-	"wikigo/internal/setting"
-	"wikigo/internal/users"
+	"wikirego/internal/common"
+	"wikirego/internal/setting"
+	"wikirego/internal/users"
 
 	"github.com/labstack/echo/v4"
 )

@@ -2,9 +2,9 @@ package setting
 
 import (
 	"strings"
-	"wikigo/internal/common"
-	"wikigo/internal/common/caching"
-	"wikigo/internal/common/errors"
+	"wikirego/internal/common"
+	"wikirego/internal/common/caching"
+	"wikirego/internal/common/errors"
 )
 
 type SettingService struct {

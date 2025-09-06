@@ -17,7 +17,7 @@ export default function LayoutAdmin() {
 
     return (
         <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900">
-            <header className="flex justify-between items-center p-4 bg-gray-800 dark:bg-black text-white">
+            <header className="flex justify-between items-center p-2 bg-[#332F2F] text-white">
                 <div className="text-xl font-bold">
                     <button className="p-2 sm:hidden" onClick={() => setIsMenuOpen((p) => !p)}>
                         <IconMenu2 className="hover:text-gray-200 dark:hover:text-gray-300" size={24} />

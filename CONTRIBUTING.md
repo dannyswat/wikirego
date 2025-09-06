@@ -1,6 +1,6 @@
-# Contributing to WikiGO
+# Contributing to wiki rego
 
-Thank you for your interest in contributing to WikiGO! We welcome contributions from the community to help improve this lightweight, file-based wiki application.
+Thank you for your interest in contributing to wiki rego! We welcome contributions from the community to help improve this lightweight, file-based wiki application.
 
 ## Table of Contents
 
@@ -27,12 +27,12 @@ By participating in this project, you agree to abide by our code of conduct:
 1. Fork the repository on GitHub
 2. Clone your fork locally:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/wikigo.git
-   cd wikigo
+   git clone https://github.com/YOUR_USERNAME/wikirego.git
+   cd wikirego
    ```
 3. Add the upstream repository:
    ```bash
-   git remote add upstream https://github.com/dannyswat/wikigo.git
+   git remote add upstream https://github.com/dannyswat/wikirego.git
    ```
 
 ## Development Setup
@@ -218,7 +218,7 @@ We welcome contributions in these areas:
 
 ## License
 
-By contributing to WikiGO, you agree that your contributions will be licensed under the GNU General Public License v2.0, the same license as the project.
+By contributing to wiki rego, you agree that your contributions will be licensed under the GNU General Public License v2.0, the same license as the project.
 
 ## Questions?
 
@@ -228,4 +228,4 @@ If you have questions about contributing, feel free to:
 - Start a discussion in the repository discussions
 - Contact the maintainers
 
-Thank you for contributing to WikiGO!
+Thank you for contributing to wiki rego!

@@ -3,10 +3,10 @@ import { createSetting } from "./setupApi";
 
 export default function CreateSetting() {
     const [form, setForm] = useState({
-        site_name: "Wiki Go",
+        site_name: "wiki rego",
         logo: "",
         theme: "default",
-        footer: "All rights reserved © Wiki Go",
+        footer: "All rights reserved © wiki rego",
         language: "en",
         is_site_protected: false,
     });

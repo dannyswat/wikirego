@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"os"
 
-	"wikigo/internal/setting"
+	"wikirego/internal/setting"
 )
 
 type SettingRepository struct {

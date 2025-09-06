@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"wikigo/internal/users"
+	"wikirego/internal/users"
 
 	"github.com/dannyswat/filedb"
 )

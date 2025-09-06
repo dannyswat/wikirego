@@ -1,10 +1,10 @@
 services:
-  wikigo:
+  wikirego:
     build:
       context: .
       dockerfile: Dockerfile
-    image: dannyswat/wikigo:latest
-    container_name: wikigo
+    image: dannyswat/wikirego:latest
+    container_name: wikirego
     ports:
       - "8080:8080"
     volumes:

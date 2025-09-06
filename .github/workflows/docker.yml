@@ -7,7 +7,7 @@ on:
 
 env:
   REGISTRY: docker.io
-  IMAGE_NAME: wikigo
+  IMAGE_NAME: wikirego
 
 jobs:
   build-and-push:
@@ -33,15 +33,15 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: dannyswat/wikigo
+          images: dannyswat/wikirego
           tags: |
             type=ref,event=tag
             type=raw,value=latest,enable={{is_default_branch}}
           labels: |
-            org.opencontainers.image.title=Wiki GO
+            org.opencontainers.image.title=wiki rego
             org.opencontainers.image.description=A lightweight and user-friendly wiki application
-            org.opencontainers.image.url=https://github.com/dannyswat/wikigo
-            org.opencontainers.image.source=https://github.com/dannyswat/wikigo
+            org.opencontainers.image.url=https://github.com/dannyswat/wikirego
+            org.opencontainers.image.source=https://github.com/dannyswat/wikirego
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5

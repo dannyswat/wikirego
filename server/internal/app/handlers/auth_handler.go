@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"time"
 
-	"wikigo/internal/common/apihelper"
-	"wikigo/internal/common/errors"
-	"wikigo/internal/keymgmt"
-	"wikigo/internal/users"
+	"wikirego/internal/common/apihelper"
+	"wikirego/internal/common/errors"
+	"wikirego/internal/keymgmt"
+	"wikirego/internal/users"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v5"

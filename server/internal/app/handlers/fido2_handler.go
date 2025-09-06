@@ -12,10 +12,10 @@ import (
 	"sync"
 	"time"
 
-	"wikigo/internal/common/apihelper"
-	"wikigo/internal/common/errors"
-	"wikigo/internal/keymgmt"
-	"wikigo/internal/users"
+	"wikirego/internal/common/apihelper"
+	"wikirego/internal/common/errors"
+	"wikirego/internal/keymgmt"
+	"wikirego/internal/users"
 
 	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/golang-jwt/jwt/v5"

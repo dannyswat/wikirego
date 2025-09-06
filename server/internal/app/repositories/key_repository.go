@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"wikigo/internal/keymgmt"
+	"wikirego/internal/keymgmt"
 
 	"github.com/dannyswat/filedb"
 )

@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"wikigo/internal/common/apihelper"
-	"wikigo/internal/common/errors"
-	"wikigo/internal/filemanager"
+	"wikirego/internal/common/apihelper"
+	"wikirego/internal/common/errors"
+	"wikirego/internal/filemanager"
 
 	"github.com/labstack/echo/v4"
 )
