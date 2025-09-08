@@ -181,6 +181,11 @@
   @apply mx-auto;
   @apply w-full;
   }
+
+  .ck-content .image.image_resized {
+  max-width: fit-content;
+}
+
 }
 
 /* Additional responsive rules for ck-content */
