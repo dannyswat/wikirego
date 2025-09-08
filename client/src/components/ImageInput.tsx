@@ -22,19 +22,19 @@ export default function ImageInput({ value, onChange }: ImageInputProps) {
             {value && (
                 <img src={value} alt={t('Preview')} className="mb-4 max-w-full h-auto rounded" />
             )}
-            <input
+            {!value && <input
                 type="file"
                 accept="image/*"
                 onChange={handleImageChange}
                 className="mb-2 w-full"
-            />
-            <button
+            />}
+            {value && <button
                 type="button"
                 onClick={() => onChange('')}
                 className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
             >
                 {t('Clear Image')}
-            </button>
+            </button>}
         </div>
     );
 

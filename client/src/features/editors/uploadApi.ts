@@ -35,10 +35,10 @@ export async function uploadImage(
   id: string
 ): Promise<{ imageUrl: string }> {
   const formData = new FormData();
-  formData.append("file", file);
+  formData.append("upload", file);
   formData.append("id", id);
 
-  const res = await fetch(baseApiUrl + "/editor/image/upload", {
+  const res = await fetch(baseApiUrl + "/editor/ckeditor/upload", {
     method: "POST",
     body: formData,
   });
@@ -46,7 +46,7 @@ export async function uploadImage(
     throw new Error("Failed to upload image");
   }
   const data = await res.json();
-  return { imageUrl: data.imageUrl };
+  return { imageUrl: data.url };
 }
 
 export async function rebuildThumbnails() {
