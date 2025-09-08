@@ -210,7 +210,7 @@
   overflow-x: auto;
 }
 
-.ck-content pre {
+.ck-content pre, .ck-content a {
   white-space: pre-wrap;
   word-break: break-all;
 }
