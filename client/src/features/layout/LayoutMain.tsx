@@ -8,6 +8,7 @@ import { Footer } from "./Footer";
 import { SettingMenu } from "./SettingMenu";
 import SiteLogo from "../../components/SiteLogo";
 import { SettingContext } from "../setup/SettingProvider";
+import { useTheme } from "../../contexts/ThemeProvider";
 
 interface LayoutProps {
   isPage?: boolean;
@@ -16,6 +17,7 @@ interface LayoutProps {
 export default function LayoutMain({ isPage }: LayoutProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { theme } = useTheme();
   const { isLoggedIn, canEdit } = useContext(UserContext);
   const { setting } = useContext(SettingContext);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -100,12 +102,15 @@ export default function LayoutMain({ isPage }: LayoutProps) {
           className={`fixed inset-0 w-full ${isMenuOpen ? "block" : "hidden"
             } sm:block sm:relative sm:w-1/4 z-20`}
           headerComponent={
-            <button
-              className="absolute right-4 top-4 sm:hidden hover:text-gray-700 dark:hover:text-gray-300"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              <IconClearAll height={24} />
-            </button>
+            <>
+              <SiteLogo isLight={theme === "light"} />
+              <button
+                className="absolute right-4 top-4 sm:hidden hover:text-gray-700 dark:hover:text-gray-300"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <IconClearAll height={24} />
+              </button>
+            </>
           }
         />
         <div className="flex-1 p-4 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">

@@ -63,7 +63,7 @@ export default function SideNav({
   return (
     <nav
       className={
-        "w-1/4 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 p-4 overflow-y-auto" +
+        "w-1/4 bg-white dark:bg-[#332F2F] text-gray-900 dark:text-gray-100 p-4 overflow-y-auto" +
         (className ? " " + className : "")
       }
       {...props}
