@@ -103,7 +103,7 @@ export default function LayoutMain({ isPage }: LayoutProps) {
             } sm:block sm:relative sm:w-1/4 z-20`}
           headerComponent={
             <>
-              <SiteLogo isLight={theme === "light"} />
+              <SiteLogo isLight={theme === "light"} className="sm:hidden" />
               <button
                 className="absolute right-4 top-4 sm:hidden hover:text-gray-700 dark:hover:text-gray-300"
                 onClick={() => setIsMenuOpen(false)}

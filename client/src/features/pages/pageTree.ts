@@ -44,6 +44,11 @@ function buildTreeInternal(
     let pages = allPages.filter(
         (page) => page.parentId === (parent ? parent.id : null)
     );
+    pages.sort(function (a, b) {
+        if (a.isPinned && !b.isPinned) return -1;
+        if (!a.isPinned && b.isPinned) return 1;
+        return smartCompare(a.title, b.title);
+    });
     if (parent?.sortChildrenDesc) pages = pages.filter(p => p.isPinned).concat(pages.filter(p => !p.isPinned).reverse());
     for (const page of pages) {
         page.children = buildTreeInternal(allPages, page);

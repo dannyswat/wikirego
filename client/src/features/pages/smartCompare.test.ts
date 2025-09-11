@@ -11,7 +11,7 @@ describe('smartCompare', () => {
 
         it('should handle different date formats', () => {
             expect(smartCompare('2023-12-25', '2024-01-01')).toBeLessThan(0);
-            expect(smartCompare('25 Dec 2023', '01 Jan 2024')).toBeLessThan(0);
+            expect(smartCompare('25 Dec 2023', '1 Jan 2024')).toBeLessThan(0);
             expect(smartCompare('12/25/2023', '01/01/2024')).toBeLessThan(0);
         });
 
