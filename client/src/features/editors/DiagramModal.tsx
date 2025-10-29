@@ -3,8 +3,9 @@ import {
   AppState,
   BinaryFiles,
   ExcalidrawImperativeAPI,
+  LibraryItems_anyVersion,
 } from "@excalidraw/excalidraw/types";
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { uploadDiagram } from "./uploadApi";
 import { NonDeletedExcalidrawElement } from "@excalidraw/excalidraw/element/types";
@@ -18,7 +19,7 @@ interface Diagram {
 
 interface DiagramModalProps {
   diagramUrl: string;
-  onClose: (imageUrl: string) => void;
+  onClose: (imageUrl: string, shouldInsert?: boolean) => void;
 }
 
 export default function DiagramModal({
@@ -42,15 +43,34 @@ export default function DiagramModal({
     enabled: !!id,
     staleTime: 0,
   });
+  const diagramResults = useQueries({
+    queries: [
+      '/excali/emojis.excalidrawlib',
+      '/excali/software-architecture.excalidrawlib',
+      '/excali/system-design.excalidrawlib',
+    ].map((url) => ({
+      queryKey: ['diagramLibrary', url],
+      queryFn: async () => {
+        const res = await fetch(url);
+        if (!res.ok) {
+          throw new Error(`Failed to fetch diagram library from ${url}`);
+        }
+        const data = await res.json();
+        return data;
+      },
+      staleTime: Infinity,
+    })),
+    combine: (results) => results.filter(r => r.isSuccess && r.data).map(r => r.data!.library as LibraryItems_anyVersion).flat() as LibraryItems_anyVersion
+  })
 
   function handleClose() {
     if (drawApi) {
       drawApi.resetScene();
     }
-    onClose('');
+    onClose('', false);
   }
 
-  async function handleClick() {
+  async function handleSave(saveAsNew: boolean = false) {
     if (!drawApi) {
       console.error("Excalidraw API not available");
       return;
@@ -76,17 +96,26 @@ export default function DiagramModal({
         appState: drawApi.getAppState(),
         files: drawApi.getFiles(),
       });
+      const diagramId = saveAsNew ? crypto.randomUUID() : (id ?? crypto.randomUUID());
       const result = await uploadDiagram({
-        id: id ?? crypto.randomUUID(),
+        id: diagramId,
         diagram: diagramJson,
         svg: svgHtml,
         png: pngBase64
       });
       setId(result.id);
-      onClose(result.diagramPngUrl);
+      onClose(result.diagramPngUrl, saveAsNew);
     } catch (error) {
       console.error("Error exporting to SVG:", error);
     }
+  }
+
+  async function handleClick() {
+    await handleSave(false);
+  }
+
+  async function handleSaveNew() {
+    await handleSave(true);
   }
 
   return createPortal(
@@ -97,6 +126,7 @@ export default function DiagramModal({
             initialData={{
               elements: data?.elements,
               files: data?.files,
+              libraryItems: diagramResults,
             }}
             excalidrawAPI={(api) => {
               setDrawApi(api);
@@ -112,6 +142,13 @@ export default function DiagramModal({
           className="px-4 py-2 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded disabled:bg-gray-300 dark:disabled:bg-gray-600"
         >
           Save
+        </button>
+        <button
+          onClick={handleSaveNew}
+          disabled={!drawApi}
+          className="ms-3 px-4 py-2 bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 text-white rounded disabled:bg-gray-300 dark:disabled:bg-gray-600"
+        >
+          Save New
         </button>
         <button
           onClick={handleClose}

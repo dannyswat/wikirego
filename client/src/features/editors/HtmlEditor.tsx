@@ -181,7 +181,7 @@ export function HtmlEditor({ content, onChange }: Props) {
       {isDiagramModalOpen && (
         <DiagramModal
           diagramUrl={diagramUrl ?? ""}
-          onClose={(imageUrl: string | undefined) => {
+          onClose={(imageUrl: string | undefined, shouldInsert?: boolean) => {
             setIsDiagramModalOpen(false);
             if (!imageUrl) return;
             const editor = editorRef.current;
@@ -191,16 +191,27 @@ export function HtmlEditor({ content, onChange }: Props) {
                   src: imageUrl + "?t=" + Date.now(),
                 });
 
-                // Insert the image at the current selection or at the end of the selection's first range.
-                const insertAt =
-                  editor.model.document.selection.getFirstPosition();
-                if (insertAt) {
-                  editor.model.deleteContent(editor.model.document.selection);
-                  editor.model.insertContent(imageElement, insertAt);
+                if (shouldInsert) {
+                  // Insert new diagram at the current selection
+                  const insertAt =
+                    editor.model.document.selection.getFirstPosition();
+                  if (insertAt) {
+                    editor.model.insertContent(imageElement, insertAt);
+                  } else {
+                    // Fallback: insert at end of document
+                    editor.model.insertContent(imageElement);
+                  }
                 } else {
-                  // Fallback if selection is not clear, e.g., insert at end of document
-                  // This might need adjustment based on desired behavior if selection is lost.
-                  editor.model.insertContent(imageElement);
+                  // Update existing diagram - delete current selection and insert
+                  const insertAt =
+                    editor.model.document.selection.getFirstPosition();
+                  if (insertAt) {
+                    editor.model.deleteContent(editor.model.document.selection);
+                    editor.model.insertContent(imageElement, insertAt);
+                  } else {
+                    // Fallback if selection is not clear
+                    editor.model.insertContent(imageElement);
+                  }
                 }
               });
             }
