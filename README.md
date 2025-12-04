@@ -84,7 +84,7 @@ cp -r dist/* ../server/public/
 
 # 4) Run the server
 cd ../server
-./wikigo.exe
+./wikirego.exe
 ```
 
 The server listens on port 8080 by default. Browse to http://localhost:8080

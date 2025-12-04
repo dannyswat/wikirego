@@ -23,7 +23,7 @@ import Search from "./features/pages/Search";
 import FileBrowser from "./features/filemanager/FileBrowser";
 import AdminOps from "./features/admin/AdminOps";
 
-export function WikiGoRoutes() {
+export function WikiRoutes() {
   return (
     <BrowserRouter>
       <Routes>

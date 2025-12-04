@@ -37,6 +37,7 @@ import { FullScreen } from "./FullScreenPlugin";
 import { Diagram } from "./DiagramPlugin"; // Import the new plugin
 import { ImageBrowser } from "./ImageBrowserPlugin"; // Import the image browser plugin
 import { SimplePasteCleanup } from "./SimplePasteCleanupPlugin";
+import { MarkdownPaste } from "./MarkdownPastePlugin"; // Import the markdown paste plugin
 import { useRef, useState } from "react";
 import DiagramModal from "./DiagramModal";
 import ImageBrowserModal from "./ImageBrowserModal";
@@ -137,6 +138,7 @@ export function HtmlEditor({ content, onChange }: Props) {
             ImageBrowser, // Add the image browser plugin
             Diagram, // Add the plugin to the plugins list
             SimplePasteCleanup, // Add the paste cleanup plugin
+            MarkdownPaste, // Add the markdown paste plugin
           ],
           simpleUpload: {
             uploadUrl: "/api/editor/ckeditor/upload",

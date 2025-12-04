@@ -3,3 +3,5 @@ server/data/
 server/media/
 *.exe
 __debug*
+.DS_Store
+demo/

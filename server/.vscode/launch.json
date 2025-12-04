@@ -7,7 +7,7 @@
             "mode": "debug",
             "program": "cmd/web/main.go",
             "cwd": "${workspaceFolder}",
-            "output": "${workspaceFolder}/wikigo.exe"
+            "output": "${workspaceFolder}/wikirego.exe"
         }
     ]
 }
