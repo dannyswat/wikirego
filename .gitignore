@@ -5,3 +5,4 @@ server/media/
 __debug*
 .DS_Store
 demo/
+SECURITY_ANALYSIS.md

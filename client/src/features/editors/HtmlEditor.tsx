@@ -35,11 +35,13 @@ import {
 
 import { FullScreen } from "./FullScreenPlugin";
 import { Diagram } from "./DiagramPlugin"; // Import the new plugin
+import { DataModel } from "./DataModelPlugin"; // Import the data model plugin
 import { ImageBrowser } from "./ImageBrowserPlugin"; // Import the image browser plugin
 import { SimplePasteCleanup } from "./SimplePasteCleanupPlugin";
 import { MarkdownPaste } from "./MarkdownPastePlugin"; // Import the markdown paste plugin
 import { useRef, useState } from "react";
 import DiagramModal from "./DiagramModal";
+import DataModelModal from "./DataModelModal";
 import ImageBrowserModal from "./ImageBrowserModal";
 
 interface Props {
@@ -49,8 +51,10 @@ interface Props {
 
 export function HtmlEditor({ content, onChange }: Props) {
   const [isDiagramModalOpen, setIsDiagramModalOpen] = useState(false);
+  const [isDataModelModalOpen, setIsDataModelModalOpen] = useState(false);
   const [isImageBrowserModalOpen, setIsImageBrowserModalOpen] = useState(false);
   const [diagramUrl, setDiagramUrl] = useState<string>();
+  const [dataModelUrl, setDataModelUrl] = useState<string>();
   const editorRef = useRef<ClassicEditor>();
 
   return (
@@ -62,6 +66,10 @@ export function HtmlEditor({ content, onChange }: Props) {
           editor.on("openDiagramModal", (_, args) => {
             setDiagramUrl(args && typeof args === "string" ? args : undefined);
             setIsDiagramModalOpen(true);
+          });
+          editor.on("openDataModelModal", (_, args) => {
+            setDataModelUrl(args && typeof args === "string" ? args : undefined);
+            setIsDataModelModalOpen(true);
           });
           editor.on("openImageBrowserModal", () => {
             setIsImageBrowserModalOpen(true);
@@ -86,6 +94,7 @@ export function HtmlEditor({ content, onChange }: Props) {
               "imageUpload",
               "imageBrowser",
               "diagramPlugin",
+              "dataModelPlugin",
               "|",
               "bulletedList",
               "numberedList",
@@ -137,6 +146,7 @@ export function HtmlEditor({ content, onChange }: Props) {
             FullScreen,
             ImageBrowser, // Add the image browser plugin
             Diagram, // Add the plugin to the plugins list
+            DataModel, // Add the data model plugin
             SimplePasteCleanup, // Add the paste cleanup plugin
             MarkdownPaste, // Add the markdown paste plugin
           ],
@@ -180,6 +190,42 @@ export function HtmlEditor({ content, onChange }: Props) {
         }}
         onChange={(_, editor) => onChange(editor.data.get())}
       />
+      {isDataModelModalOpen && (
+        <DataModelModal
+          dataModelUrl={dataModelUrl ?? ""}
+          onClose={(imageUrl: string | undefined, shouldInsert?: boolean) => {
+            setIsDataModelModalOpen(false);
+            if (!imageUrl) return;
+            const editor = editorRef.current;
+            if (editor) {
+              editor.model.change((writer) => {
+                const imageElement = writer.createElement("imageBlock", {
+                  src: imageUrl + "?t=" + Date.now(),
+                });
+
+                if (shouldInsert) {
+                  const insertAt =
+                    editor.model.document.selection.getFirstPosition();
+                  if (insertAt) {
+                    editor.model.insertContent(imageElement, insertAt);
+                  } else {
+                    editor.model.insertContent(imageElement);
+                  }
+                } else {
+                  const insertAt =
+                    editor.model.document.selection.getFirstPosition();
+                  if (insertAt) {
+                    editor.model.deleteContent(editor.model.document.selection);
+                    editor.model.insertContent(imageElement, insertAt);
+                  } else {
+                    editor.model.insertContent(imageElement);
+                  }
+                }
+              });
+            }
+          }}
+        />
+      )}
       {isDiagramModalOpen && (
         <DiagramModal
           diagramUrl={diagramUrl ?? ""}

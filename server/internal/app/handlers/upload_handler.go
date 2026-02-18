@@ -211,6 +211,55 @@ func (uh *UploadHandler) GetDiagramSource(e echo.Context) error {
 	return e.String(200, string(jsonBytes))
 }
 
+// Data Model (Modata) handlers
+
+type SaveDataModelRequest struct {
+	SchemaJson string `json:"schema" validate:"required"`
+	PngContent string `json:"png" validate:"required"`
+	Id         string `json:"id" validate:"required"`
+}
+
+type SaveDataModelResponse struct {
+	Id              string `json:"id"`
+	DataModelPngUrl string `json:"dataModelPngUrl"`
+}
+
+func (uh *UploadHandler) SaveDataModel(e echo.Context) error {
+	req := new(SaveDataModelRequest)
+	if err := e.Bind(req); err != nil {
+		return errors.BadRequest(err.Error())
+	}
+	err := uh.FileManager.SaveFile([]byte(req.SchemaJson), req.Id+".json", "/umlsource")
+	if err != nil {
+		return err
+	}
+	pngBinary, err := getPngBinaryFromBase64DataUrl(req.PngContent)
+	if err != nil {
+		return errors.BadRequest("invalid PNG content: " + err.Error())
+	}
+	err = uh.FileManager.SaveFile(pngBinary, req.Id+".png", "/uml")
+	if err != nil {
+		return err
+	}
+	return e.JSON(200, &SaveDataModelResponse{
+		Id:              req.Id,
+		DataModelPngUrl: "/media/uml/" + req.Id + ".png",
+	})
+}
+
+func (uh *UploadHandler) GetDataModelSource(e echo.Context) error {
+	id := e.Param("id")
+	if id == "" {
+		return errors.BadRequest("invalid data model id")
+	}
+	jsonBytes, err := uh.FileManager.ReadFile(id+".json", "/umlsource")
+	if err != nil {
+		return apihelper.ReturnErrorResponse(e, err)
+	}
+
+	return e.String(200, string(jsonBytes))
+}
+
 func getPngBinaryFromBase64DataUrl(dataUrl string) ([]byte, error) {
 	// Split the data URL into parts
 	parts := strings.SplitN(dataUrl, ",", 2)

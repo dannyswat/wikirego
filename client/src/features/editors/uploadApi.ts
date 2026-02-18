@@ -58,3 +58,33 @@ export async function rebuildThumbnails() {
   }
   return await res.json();
 }
+
+// Data Model (Modata) API
+
+export interface UploadDataModelRequest {
+  id: string;
+  schema: string;
+  png: string;
+}
+
+export interface UploadDataModelResponse {
+  id: string;
+  dataModelPngUrl: string;
+}
+
+export async function uploadDataModel(
+  request: UploadDataModelRequest
+): Promise<UploadDataModelResponse> {
+  const res = await fetch(baseApiUrl + "/editor/datamodel/upload", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(request),
+  });
+  if (!res.ok) {
+    throw new Error("Failed to upload data model");
+  }
+  const data = await res.json();
+  return data;
+}

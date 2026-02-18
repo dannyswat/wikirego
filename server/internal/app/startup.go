@@ -229,6 +229,8 @@ func (s *WikiStartUp) RegisterHandlers(e *echo.Echo) {
 	editor.POST("/createpath", s.uploadHandler.CreatePath)
 	editor.POST("/diagram/upload", s.uploadHandler.SaveDiagram)
 	editor.GET("/diagram/source/:id", s.uploadHandler.GetDiagramSource)
+	editor.POST("/datamodel/upload", s.uploadHandler.SaveDataModel)
+	editor.GET("/datamodel/source/:id", s.uploadHandler.GetDataModelSource)
 	editor.GET("/files/list", s.fileHandler.ListFiles)
 	editor.GET("/files/read", s.fileHandler.ReadFile)
 	editor.GET("/files/info", s.fileHandler.GetFileInfo)
