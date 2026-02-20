@@ -34,7 +34,7 @@ export default function Page() {
     const siteName = setting?.site_name || "wiki rego";
     if (data?.title) document.title = data.title + " - " + siteName;
     else document.title = siteName;
-  }, [data?.title]);
+  }, [data?.title, setting?.site_name]);
 
   if (isLoading) return <div>{t("Loading")}</div>;
   if (isError) return <div>{t("Error loading page")}</div>;
@@ -43,10 +43,10 @@ export default function Page() {
   return (
     <div className="flex gap-6">
       <div className="flex-1 min-w-0">
-        <h1 className="text-3xl font-bold font-serif mb-2 border-b-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
+        <h1 className="text-3xl font-semibold tracking-tight mb-1 text-[#1e5770] dark:text-[#92A7B4]">
           {data.title}
         </h1>
-        <p className="text-sm font-serif px-1 mb-4 text-gray-700 dark:text-gray-300">{data.shortDesc}</p>
+        <p className="text-sm px-0.5 mb-6 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">{data.shortDesc}</p>
         <div
           className="ck-content overflow-x-auto break-words"
           dangerouslySetInnerHTML={{ __html: data.content || "" }}
