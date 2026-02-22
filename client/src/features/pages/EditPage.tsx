@@ -7,9 +7,13 @@ import {
   PageRequest,
   updatePage,
 } from "./pageApi";
-import { HtmlEditor } from "../editors/HtmlEditor";
+import HtmlEditor from "../htmleditors/HtmlEditor";
+import type { HtmlEditorRef } from "../htmleditors/HtmlEditor";
+import DiagramModal from "../editors/DiagramModal";
+import DataModelModal from "../editors/DataModelModal";
+import ImageBrowserModal from "../editors/ImageBrowserModal";
 import { queryClient } from "../../common/query";
-import { useEffect, useState, MouseEvent, useMemo } from "react";
+import { useEffect, useState, useRef, MouseEvent, useMemo } from "react";
 import { clearCache, PageDropDown } from "../editors/PageDropDown";
 import { IconFidgetSpinner } from "@tabler/icons-react";
 import ToggleButton from "../../components/ToggleButton";
@@ -22,6 +26,12 @@ export default function EditPage() {
   const { id } = useParams();
   const pageId = id ? window.location.pathname.substring(6) : "home";
   const { isAutoSaveEnabled } = useAutoSaveStore();
+  const editorRef = useRef<HtmlEditorRef>(null);
+  const [isDiagramModalOpen, setIsDiagramModalOpen] = useState(false);
+  const [isDataModelModalOpen, setIsDataModelModalOpen] = useState(false);
+  const [isImageBrowserModalOpen, setIsImageBrowserModalOpen] = useState(false);
+  const [diagramUrl, setDiagramUrl] = useState<string>();
+  const [dataModelUrl, setDataModelUrl] = useState<string>();
   const localStorageKey = `editPageData_${pageId}`;
   const navigate = useNavigate();
   const [data, setData] = useState<PageRequest>(() => ({
@@ -133,7 +143,12 @@ export default function EditPage() {
     else alert(t('No revision available'));
   }
 
+  function handleInsertImage(imageUrl: string) {
+    editorRef.current?.insertImage(imageUrl + "?t=" + Date.now());
+  }
+
   return (
+    <>
     <div className="w-full flex flex-col gap-4">
       <section className="flex flex-row items-center">
         <label className="basis-1/4">{t('Title')}</label>
@@ -202,8 +217,18 @@ export default function EditPage() {
       </section>
       <section>
         <HtmlEditor
-          content={data.content}
+          ref={editorRef}
+          value={data.content}
           onChange={(content) => setData((prev) => ({ ...prev, content }))}
+          onOpenImageBrowser={() => setIsImageBrowserModalOpen(true)}
+          onOpenDiagram={(imageUrl?: string) => {
+            setDiagramUrl(imageUrl);
+            setIsDiagramModalOpen(true);
+          }}
+          onOpenDataModel={(imageUrl?: string) => {
+            setDataModelUrl(imageUrl);
+            setIsDataModelModalOpen(true);
+          }}
         />
       </section>
       <section>
@@ -269,6 +294,36 @@ export default function EditPage() {
         </MenuButton>
       </section>
     </div>
+      {isDiagramModalOpen && (
+        <DiagramModal
+          diagramUrl={diagramUrl ?? ""}
+          onClose={(imageUrl: string | undefined) => {
+            setIsDiagramModalOpen(false);
+            if (!imageUrl) return;
+            handleInsertImage(imageUrl);
+          }}
+        />
+      )}
+      {isDataModelModalOpen && (
+        <DataModelModal
+          dataModelUrl={dataModelUrl ?? ""}
+          onClose={(imageUrl: string | undefined) => {
+            setIsDataModelModalOpen(false);
+            if (!imageUrl) return;
+            handleInsertImage(imageUrl);
+          }}
+        />
+      )}
+      {isImageBrowserModalOpen && (
+        <ImageBrowserModal
+          onClose={(selectedImageUrl?: string) => {
+            setIsImageBrowserModalOpen(false);
+            if (!selectedImageUrl) return;
+            handleInsertImage(selectedImageUrl);
+          }}
+        />
+      )}
+    </>
   );
 }
 

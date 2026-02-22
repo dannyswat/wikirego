@@ -1,0 +1,385 @@
+/* Lexical Editor Styles */
+.html-editor-wrapper {
+  position: relative;
+}
+
+.html-editor-wrapper.html-editor-fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh !important;
+}
+
+.html-editor-fullscreen .html-editor-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  border-radius: 0;
+  border: none;
+}
+
+.html-editor-fullscreen .editor-inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.html-editor-fullscreen .editor-input {
+  flex: 1;
+  max-height: none;
+  min-height: 0;
+}
+
+.html-editor-container {
+  background: white;
+  border-radius: 0.5rem;
+  border: 1px solid #d1d5db;
+}
+
+.html-editor-container:focus-within {
+  border-color: #6366f1;
+}
+
+/* Toolbar styles */
+.toolbar {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  border-bottom: 1px solid #d1d5db;
+  background: #f9fafb;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+}
+
+.toolbar-select {
+  height: 28px;
+  padding: 0 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  background: white;
+  cursor: pointer;
+}
+
+.toolbar-select:hover {
+  border-color: #6366f1;
+}
+
+.toolbar-select:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.toolbar-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
+  background: transparent;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.toolbar-button:hover {
+  background: #e5e7eb;
+  color: #6366f1;
+}
+
+.toolbar-button.active {
+  background: #e0e7ff;
+  color: #6366f1;
+  border-color: #6366f1;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 24px;
+  background: #d1d5db;
+  margin: 0 0.25rem;
+}
+
+/* Editor content area */
+.editor-inner {
+  position: relative;
+}
+
+.editor-input {
+  min-height: 150px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 0.75rem;
+  font-size: 0.875rem;
+  font-family: inherit;
+  outline: none;
+}
+
+.editor-placeholder {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  color: #9ca3af;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Typography styles */
+.editor-paragraph {
+  margin: 0 0 0.5rem 0;
+}
+
+.editor-heading-h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+}
+
+.editor-heading-h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+}
+
+.editor-heading-h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+}
+
+/* List styles */
+.editor-list-ul {
+  list-style-type: disc;
+  margin: 0 0 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.editor-list-ol {
+  list-style-type: decimal;
+  margin: 0 0 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.editor-list-item {
+  margin: 0.25rem 0;
+}
+
+.editor-nested-list {
+  list-style-type: circle;
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+/* Link styles */
+.editor-link {
+  color: #6366f1;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.editor-link:hover {
+  color: #4f46e5;
+}
+
+/* Text formatting */
+.editor-text-bold {
+  font-weight: 700;
+}
+
+.editor-text-italic {
+  font-style: italic;
+}
+
+.editor-text-underline {
+  text-decoration: underline;
+}
+
+.editor-text-strikethrough {
+  text-decoration: line-through;
+}
+
+.editor-text-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.875em;
+  color: #d73a49;
+  background: #f6f8fa;
+  border: 1px solid #e1e4e8;
+  padding: 0.1rem 0.3rem;
+  border-radius: 0.25rem;
+}
+
+/* Table styles */
+.editor-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.5rem 0;
+  table-layout: fixed;
+}
+
+.editor-table-cell {
+  border: 1px solid #d1d5db;
+  padding: 0.5rem;
+  min-width: 50px;
+  vertical-align: top;
+}
+
+.editor-table-cell-header {
+  background: #f9fafb;
+  font-weight: 600;
+}
+
+.editor-table-row {
+  /* Row styles if needed */
+}
+
+/* Table selection */
+.editor-table-cell.selected {
+  background-color: #e0e7ff;
+}
+
+/* Image styles */
+.editor-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.375rem;
+  margin: 0.5rem 0;
+  display: block;
+}
+
+.editor-image.selected {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+/* Table action menu */
+.table-action-menu {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  padding: 0.25rem;
+}
+
+.table-action-menu button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  font-size: 0.875rem;
+  color: #e5e7eb;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 0.375rem;
+  transition: all 0.15s ease;
+}
+
+.table-action-menu button:hover {
+  background: #374151;
+  color: #fff;
+}
+
+.table-action-menu button.danger {
+  color: #fca5a5;
+}
+
+.table-action-menu button.danger:hover {
+  background: #7f1d1d;
+  color: #fee2e2;
+}
+
+.table-action-divider {
+  width: 1px;
+  height: 24px;
+  background: #4b5563;
+  margin: 0 4px;
+}
+
+/* Code block styles */
+.editor-code-block {
+  display: block;
+  background: #f6f8fa;
+  color: #24292e;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Courier New', monospace;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  padding: 0.75rem 1rem;
+  margin: 0.5rem 0;
+  border-radius: 0.375rem;
+  border: 1px solid #e1e4e8;
+  overflow-x: auto;
+  tab-size: 2;
+  white-space: pre;
+}
+
+/* Inline code override inside code blocks — reset inherited inline style */
+.editor-code-block .editor-text-code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+  color: inherit;
+}
+
+/* Code highlight token styles (GitHub light) */
+.editor-tokenComment {
+  color: #6a737d;
+  font-style: italic;
+}
+
+.editor-tokenPunctuation {
+  color: #24292e;
+}
+
+.editor-tokenProperty {
+  color: #005cc5;
+}
+
+.editor-tokenSelector {
+  color: #032f62;
+}
+
+.editor-tokenOperator {
+  color: #d73a49;
+}
+
+.editor-tokenAttr {
+  color: #d73a49;
+}
+
+.editor-tokenVariable {
+  color: #e36209;
+}
+
+.editor-tokenFunction {
+  color: #6f42c1;
+}
+
+/* Blockquote styles (enhanced) */
+.editor-quote {
+  margin: 0.5rem 0;
+  padding: 0.5rem 1rem;
+  border-left: 4px solid #6366f1;
+  background: #f5f3ff;
+  color: #4b5563;
+  border-radius: 0 0.25rem 0.25rem 0;
+  font-style: italic;
+}

@@ -38,7 +38,7 @@ export async function uploadImage(
   formData.append("upload", file);
   formData.append("id", id);
 
-  const res = await fetch(baseApiUrl + "/editor/ckeditor/upload", {
+  const res = await fetch(baseApiUrl + "/editor/upload/image", {
     method: "POST",
     body: formData,
   });
@@ -50,7 +50,7 @@ export async function uploadImage(
 }
 
 export async function rebuildThumbnails() {
-  const res = await fetch(baseApiUrl + "/editor/ckeditor/upload/regeneratethumbnail", {
+  const res = await fetch(baseApiUrl + "/editor/upload/regeneratethumbnail", {
     method: "POST",
   });
   if (!res.ok) {

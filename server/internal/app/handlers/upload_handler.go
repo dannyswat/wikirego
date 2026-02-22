@@ -50,7 +50,7 @@ func (uh *UploadHandler) UploadFile(e echo.Context) error {
 	return e.JSON(200, "File uploaded successfully")
 }
 
-type CKEditorUploadRequest struct {
+type UploadImageRequest struct {
 	Upload []byte `form:"upload" validate:"required"`
 }
 
@@ -59,8 +59,8 @@ var (
 	invalidFileNameChars = `[ \/:*?"<>|]`
 )
 
-func (uh *UploadHandler) CKEditorUpload(e echo.Context) error {
-	req := new(CKEditorUploadRequest)
+func (uh *UploadHandler) UploadImage(e echo.Context) error {
+	req := new(UploadImageRequest)
 	if err := e.Bind(req); err != nil {
 		return errors.BadRequest(err.Error())
 	}

@@ -1,8 +1,11 @@
-import { MouseEvent, useEffect, useState } from "react";
+import { MouseEvent, useEffect, useRef, useState } from "react";
 import { createPage, getAllPages, PageRequest } from "./pageApi";
-import { HtmlEditor } from "../editors/HtmlEditor";
+import HtmlEditor from "../htmleditors/HtmlEditor";
+import type { HtmlEditorRef } from "../htmleditors/HtmlEditor";
+import DiagramModal from "../editors/DiagramModal";
+import DataModelModal from "../editors/DataModelModal";
+import ImageBrowserModal from "../editors/ImageBrowserModal";
 
-import "ckeditor5/ckeditor5.css";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { queryClient } from "../../common/query";
@@ -14,6 +17,12 @@ import { useTranslation } from "react-i18next";
 export default function NewPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const editorRef = useRef<HtmlEditorRef>(null);
+  const [isDiagramModalOpen, setIsDiagramModalOpen] = useState(false);
+  const [isDataModelModalOpen, setIsDataModelModalOpen] = useState(false);
+  const [isImageBrowserModalOpen, setIsImageBrowserModalOpen] = useState(false);
+  const [diagramUrl, setDiagramUrl] = useState<string>();
+  const [dataModelUrl, setDataModelUrl] = useState<string>();
   const urlParams = new URLSearchParams(window.location.search);
   const parentUrl = urlParams.get("parent");
   const [data, setData] = useState<PageRequest>(() => ({
@@ -89,7 +98,12 @@ export default function NewPage() {
     createPageApi.mutate({ ...data, id: 0 });
   }
 
+  function handleInsertImage(imageUrl: string) {
+    editorRef.current?.insertImage(imageUrl + "?t=" + Date.now());
+  }
+
   return (
+    <>
     <div className="w-full flex flex-col gap-4">
       <section className="flex flex-row items-center">
         <label className="basis-1/4">{t('Title')}</label>
@@ -160,8 +174,18 @@ export default function NewPage() {
       </section>
       <section>
         <HtmlEditor
-          content={data.content}
+          ref={editorRef}
+          value={data.content}
           onChange={(content) => setData((prev) => ({ ...prev, content }))}
+          onOpenImageBrowser={() => setIsImageBrowserModalOpen(true)}
+          onOpenDiagram={(imageUrl?: string) => {
+            setDiagramUrl(imageUrl);
+            setIsDiagramModalOpen(true);
+          }}
+          onOpenDataModel={(imageUrl?: string) => {
+            setDataModelUrl(imageUrl);
+            setIsDataModelModalOpen(true);
+          }}
         />
       </section>
       <section className="flex flex-row items-center">
@@ -204,6 +228,36 @@ export default function NewPage() {
         </button>
       </section>
     </div>
+      {isDiagramModalOpen && (
+        <DiagramModal
+          diagramUrl={diagramUrl ?? ""}
+          onClose={(imageUrl: string | undefined) => {
+            setIsDiagramModalOpen(false);
+            if (!imageUrl) return;
+            handleInsertImage(imageUrl);
+          }}
+        />
+      )}
+      {isDataModelModalOpen && (
+        <DataModelModal
+          dataModelUrl={dataModelUrl ?? ""}
+          onClose={(imageUrl: string | undefined) => {
+            setIsDataModelModalOpen(false);
+            if (!imageUrl) return;
+            handleInsertImage(imageUrl);
+          }}
+        />
+      )}
+      {isImageBrowserModalOpen && (
+        <ImageBrowserModal
+          onClose={(selectedImageUrl?: string) => {
+            setIsImageBrowserModalOpen(false);
+            if (!selectedImageUrl) return;
+            handleInsertImage(selectedImageUrl);
+          }}
+        />
+      )}
+    </>
   );
 }
 
