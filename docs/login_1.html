@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wiki Rego — Login Design 1</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-slate-100 via-slate-50 to-[#eef4f7] text-slate-800 dark:from-slate-950 dark:via-slate-900 dark:to-[#0f1d24] dark:text-slate-200">
+  <div class="mx-auto flex min-h-screen max-w-[1200px] items-center px-4 py-8 sm:px-6 lg:px-8">
+    <div class="grid w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/70 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40 lg:grid-cols-2">
+      <section class="relative hidden bg-[#1e5770] p-8 text-white lg:block">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.16),transparent_35%),radial-gradient(circle_at_85%_60%,rgba(146,167,180,0.35),transparent_45%)]"></div>
+        <div class="relative z-10">
+          <p class="inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs uppercase tracking-wider text-slate-100">Wiki Rego</p>
+          <h1 class="mt-5 text-3xl font-semibold tracking-tight">Team knowledge,<br />always in sync.</h1>
+          <p class="mt-4 max-w-sm text-sm text-slate-200/90">Organize documentation, architecture notes, and internal playbooks in one secure space.</p>
+          <ul class="mt-8 space-y-3 text-sm text-slate-100/90">
+            <li class="flex items-center gap-2"><span class="inline-block h-2 w-2 rounded-full bg-[#92A7B4]"></span>Structured pages with nested navigation</li>
+            <li class="flex items-center gap-2"><span class="inline-block h-2 w-2 rounded-full bg-[#92A7B4]"></span>Rich editing and revision history</li>
+            <li class="flex items-center gap-2"><span class="inline-block h-2 w-2 rounded-full bg-[#92A7B4]"></span>Password and passkey authentication</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="p-6 sm:p-8 lg:p-10">
+        <div class="mx-auto w-full max-w-md">
+          <p class="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">Welcome back</p>
+          <h2 class="mt-2 text-2xl font-semibold tracking-tight text-[#1e5770] dark:text-[#92A7B4]">Login</h2>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Sign in to continue to your workspace.</p>
+
+          <div class="mt-6 space-y-4">
+            <input type="text" placeholder="Username" class="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-slate-900 outline-none transition focus:border-[#2d6880] focus:ring-2 focus:ring-[#92A7B4]/30 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100" />
+            <input type="password" placeholder="Password" class="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-slate-900 outline-none transition focus:border-[#2d6880] focus:ring-2 focus:ring-[#92A7B4]/30 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100" />
+
+            <button class="w-full rounded-lg bg-[#2d6880] p-2.5 font-medium text-white transition hover:bg-[#1e5770]">Login</button>
+
+            <div class="flex items-center gap-3">
+              <div class="h-px flex-1 bg-slate-200 dark:bg-slate-700"></div>
+              <span class="text-xs uppercase tracking-wider text-slate-400 dark:text-slate-500">or</span>
+              <div class="h-px flex-1 bg-slate-200 dark:bg-slate-700"></div>
+            </div>
+
+            <button class="w-full rounded-lg bg-emerald-600 p-2.5 font-medium text-white transition hover:bg-emerald-700">Login with PassKey</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</body>
+
+</html>

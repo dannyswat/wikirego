@@ -87,48 +87,96 @@ export default function LoginPage() {
   }
 
   return (
-    <div
-      className="flex items-center justify-center h-screen bg-cover"
-      style={{
-        backgroundImage:
-          theme === 'dark' ? "url(dark-blue-sky.jpg)" : "url(1726537215_sheep-flock-of-sheep-series-standing-on-85683.jpeg)",
-      }}
-    >
-      <div className="w-96 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 p-4 rounded shadow-lg">
-        <h1 className="text-2xl font-bold mb-4">{t("Login")}</h1>
-        <input
-          type="text"
-          placeholder={t("Username")}
-          className="w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded mb-4"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder={t("Password")}
-          className="w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded mb-4"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button
-          className="w-full bg-blue-500 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-800 text-white p-2 rounded"
-          onClick={handleLoginClick}
-        >
-          {t("Login")}
-        </button>
-        <div className="mt-4 text-center text-gray-600 dark:text-gray-400">{t("or")}</div>
-        <button
-          className="w-full bg-green-500 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-800 text-white p-2 rounded mt-4"
-          onClick={() => passkeyLogin.mutate()}
-          disabled={passkeyLogin.isPending}
-        >
-          {passkeyLogin.isPending ? t("Authenticating") : t("Login with PassKey")}
-        </button>
-        {(login.error || passkeyLogin.error) && (
-          <div className="mt-4 text-red-700 dark:text-red-400">
-            {login.error?.message || passkeyLogin.error?.message}
-          </div>
-        )}
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-slate-50 to-[#eef4f7] text-slate-800 dark:from-slate-950 dark:via-slate-900 dark:to-[#0f1d24] dark:text-slate-200">
+      <div className="mx-auto flex min-h-screen max-w-[1200px] items-center px-4 py-8 sm:px-6 lg:px-8">
+        <div className="grid w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/70 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40 lg:grid-cols-2">
+          <section className="relative hidden bg-[#1e5770] p-8 text-white lg:block">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.16),transparent_35%),radial-gradient(circle_at_85%_60%,rgba(146,167,180,0.35),transparent_45%)]" />
+            <div className="relative z-10">
+              <p className="inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs uppercase tracking-wider text-slate-100">
+                Wiki Rego
+              </p>
+              <h1 className="mt-5 text-3xl font-semibold tracking-tight">
+                Team knowledge,
+                <br />
+                always in sync.
+              </h1>
+              <p className="mt-4 max-w-sm text-sm text-slate-200/90">
+                Organize documentation, architecture notes, and internal playbooks in one secure space.
+              </p>
+              <ul className="mt-8 space-y-3 text-sm text-slate-100/90">
+                <li className="flex items-center gap-2">
+                  <span className="inline-block h-2 w-2 rounded-full bg-[#92A7B4]" />
+                  Structured pages with nested navigation
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="inline-block h-2 w-2 rounded-full bg-[#92A7B4]" />
+                  Rich editing and revision history
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="inline-block h-2 w-2 rounded-full bg-[#92A7B4]" />
+                  Password and passkey authentication
+                </li>
+              </ul>
+            </div>
+          </section>
+
+          <section className="p-6 sm:p-8 lg:p-10">
+            <div className="mx-auto w-full max-w-md">
+              <p className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">Welcome back</p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[#1e5770] dark:text-[#92A7B4]">{t("Login")}</h2>
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Sign in to continue to your workspace.</p>
+
+              <div className="mt-6 space-y-4">
+                <input
+                  type="text"
+                  placeholder={t("Username")}
+                  className="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-slate-900 outline-none transition focus:border-[#2d6880] focus:ring-2 focus:ring-[#92A7B4]/30 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+                <input
+                  type="password"
+                  placeholder={t("Password")}
+                  className="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-slate-900 outline-none transition focus:border-[#2d6880] focus:ring-2 focus:ring-[#92A7B4]/30 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+
+                <button
+                  className="w-full rounded-lg bg-[#2d6880] p-2.5 font-medium text-white transition hover:bg-[#1e5770]"
+                  onClick={handleLoginClick}
+                >
+                  {t("Login")}
+                </button>
+
+                <div className="flex items-center gap-3">
+                  <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
+                  <span className="text-xs uppercase tracking-wider text-slate-400 dark:text-slate-500">{t("or")}</span>
+                  <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
+                </div>
+
+                <button
+                  className="w-full rounded-lg bg-emerald-600 p-2.5 font-medium text-white transition hover:bg-emerald-700 disabled:opacity-70"
+                  onClick={() => passkeyLogin.mutate()}
+                  disabled={passkeyLogin.isPending}
+                >
+                  {passkeyLogin.isPending ? t("Authenticating") : t("Login with PassKey")}
+                </button>
+
+                {(login.error || passkeyLogin.error) && (
+                  <div className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-700 dark:bg-red-900/20 dark:text-red-300">
+                    {login.error?.message || passkeyLogin.error?.message}
+                  </div>
+                )}
+              </div>
+
+              <p className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400">
+                {theme === 'dark' ? 'Dark mode enabled' : 'Light mode enabled'}
+              </p>
+            </div>
+          </section>
+        </div>
       </div>
     </div>
   );

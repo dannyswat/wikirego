@@ -21,24 +21,24 @@ export default function RebuildSearch() {
     }
 
     return (
-        <div className="w-full flex flex-col gap-4">
-            <h1 className="text-2xl font-bold">{t('Rebuild Search Index')}</h1>
-            <p className="text-gray-600 dark:text-gray-400">
+        <div className="flex w-full flex-col gap-4">
+            <h2 className="text-xl font-semibold tracking-tight text-[#1e5770] dark:text-[#92A7B4]">{t('Rebuild Search Index')}</h2>
+            <p className="text-slate-600 dark:text-slate-300">
                 {t('Rebuild search index description')}
             </p>
             <button disabled={isLoading}
                 onClick={handleClick}
-                className="bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded-md py-2 px-4"
+                className="w-fit rounded-lg bg-[#2d6880] px-4 py-2.5 font-medium text-white transition hover:bg-[#1e5770] disabled:opacity-60"
             >
                 {isLoading ? t('Rebuilding...') : t('Rebuild Search Index')}
             </button>
             {message && message.includes(t('Search index rebuilt successfully.')) && (
-                <div className="mt-4 p-2 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-md">
+                <div className="mt-2 rounded-md border border-emerald-300 bg-emerald-50 p-2 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300">
                     {message}
                 </div>
             )}
             {message && !message.includes(t('Search index rebuilt successfully.')) && (
-                <div className="mt-4 p-2 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 rounded-md">
+                <div className="mt-2 rounded-md border border-red-300 bg-red-50 p-2 text-red-700 dark:border-red-700 dark:bg-red-900/20 dark:text-red-300">
                     {message}
                 </div>
             )}

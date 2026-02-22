@@ -27,6 +27,7 @@ export default function LayoutMain({ isPage }: LayoutProps) {
     if (setting && setting.is_site_protected && !isLoggedIn) {
       navigate(`/login`);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const pageId = isPage
@@ -43,86 +44,106 @@ export default function LayoutMain({ isPage }: LayoutProps) {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900">
-      <header className="flex justify-between items-center p-2 bg-[#332F2F] text-white">
-        <div className="text-xl font-bold">
+    <div className="flex min-h-screen flex-col bg-slate-100 text-slate-800 dark:bg-slate-950 dark:text-slate-200">
+      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90">
+        <div className="mx-auto flex h-16 max-w-[1600px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2">
+            <button
+              className="rounded-md p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 lg:hidden"
+              onClick={() => setIsMenuOpen((p) => !p)}
+            >
+              <IconMenu2 size={22} />
+            </button>
+            <NavLink className="inline-flex" to="/">
+              <SiteLogo isLight={theme === "light"} />
+            </NavLink>
+          </div>
+
           <button
-            className="p-2 sm:hidden"
-            onClick={() => setIsMenuOpen((p) => !p)}
+            className="hidden w-full max-w-xl items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-500 hover:text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:text-slate-200 md:flex"
+            onClick={() => navigate("/search")}
           >
-            <IconMenu2 className="hover:text-gray-200 dark:hover:text-gray-300" size={24} />
+            <IconSearch size={16} />
+            <span>{t("Search")}</span>
           </button>
-          <NavLink className="hidden sm:inline" to="/">
-            <SiteLogo />
-          </NavLink>
-        </div>
-        <div className="space-x-4 text-right flex items-center">
-          <NavLink to="/search" className="text-white hover:text-gray-200 dark:hover:text-gray-300">
-            <IconSearch className="inline-block mr-1" size={20} />
-          </NavLink>
-          {!isLoggedIn && (
+
+          <div className="flex items-center gap-2 sm:gap-3">
             <NavLink
-              to={"/login" + returnUrlQuery}
-              className="bg-blue-500 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-800 text-white font-bold py-2 px-4 rounded"
+              to="/search"
+              className="rounded-md p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 md:hidden"
             >
-              {t("Login")}
+              <IconSearch size={20} />
             </NavLink>
-          )}
-          {isLoggedIn && canEdit && (
-            <NavLink
-              to="/create"
-              className="bg-green-500 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-800 text-white font-bold py-2 px-4 rounded"
-            >
-              {t("Create")}
-            </NavLink>
-          )}
-          {isLoggedIn && isPage && pageId && canEdit && (
-            <NavLink
-              to={`/edit/${pageId}`}
-              className="bg-yellow-500 hover:bg-yellow-700 dark:bg-yellow-600 dark:hover:bg-yellow-800 text-white font-bold py-2 px-4 rounded"
-            >
-              {t("Edit")}
-            </NavLink>
-          )}
-          {isLoggedIn && (
-            <SettingMenu
-              returnUrl={isPage ? window.location.pathname : undefined}
-            />
-          )}
+            {!isLoggedIn && (
+              <NavLink
+                to={"/login" + returnUrlQuery}
+                className="rounded-lg bg-[#2d6880] px-3 py-2 text-sm font-medium text-white hover:bg-[#1e5770]"
+              >
+                {t("Login")}
+              </NavLink>
+            )}
+            {isLoggedIn && canEdit && (
+              <NavLink
+                to="/create"
+                className="rounded-lg bg-[#2d6880] px-3 py-2 text-sm font-medium text-white hover:bg-[#1e5770]"
+              >
+                {t("Create")}
+              </NavLink>
+            )}
+            {isLoggedIn && isPage && pageId && canEdit && (
+              <NavLink
+                to={`/edit/${pageId}`}
+                className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+              >
+                {t("Edit")}
+              </NavLink>
+            )}
+            {isLoggedIn && (
+              <SettingMenu
+                returnUrl={isPage ? window.location.pathname : undefined}
+              />
+            )}
+          </div>
         </div>
       </header>
-      <div className="flex flex-1">
+
+      <div className="mx-auto flex w-full max-w-[1600px] flex-1 px-4 sm:px-6 lg:px-8">
         <div
           className={`${isMenuOpen ? "block" : "hidden"
-            } sm:hidden fixed inset-0 bg-black dark:bg-black bg-opacity-50 dark:bg-opacity-70 z-10`}
+            } fixed inset-0 z-20 bg-black/50 dark:bg-black/70 lg:hidden`}
           onClick={() => setIsMenuOpen(false)}
         ></div>
-        <SideNav
-          navigate={navigateTo}
-          className={`fixed inset-0 w-full ${isMenuOpen ? "block" : "hidden"
-            } sm:block sm:relative sm:w-1/4 z-20`}
-          headerComponent={
-            <>
-              <SiteLogo isLight={theme === "light"} className="sm:hidden" />
-              <button
-                className="absolute right-4 top-4 sm:hidden hover:text-gray-700 dark:hover:text-gray-300"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <IconClearAll height={24} />
-              </button>
-            </>
-          }
-        />
-        <div className="flex-1 p-4 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-          <Outlet />
+
+        <div className="grid w-full grid-cols-1 gap-4 py-4 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-6 lg:py-6">
+          <SideNav
+            navigate={navigateTo}
+            className={`fixed inset-y-0 left-0 z-30 w-[85%] max-w-sm rounded-r-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 ${isMenuOpen ? "block" : "hidden"
+              } lg:sticky lg:top-24 lg:block lg:h-[calc(100vh-7rem)] lg:w-auto lg:max-w-none lg:rounded-xl`}
+            headerComponent={
+              <>
+                <SiteLogo isLight={theme === "light"} className="mb-3 lg:hidden" />
+                <button
+                  className="absolute right-4 top-4 rounded-md p-1 text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 lg:hidden"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <IconClearAll height={22} />
+                </button>
+              </>
+            }
+          />
+
+          <div className="min-w-0">
+            <Outlet />
+          </div>
         </div>
       </div>
+
       <Footer />
       <button
-        className="p-2 fixed right-3 bottom-3 bg-gray-600/30 hover:bg-gray-600 dark:bg-gray-700/40 dark:hover:bg-gray-700 rounded-xl sm:hidden"
+        className="fixed bottom-3 right-3 rounded-xl bg-slate-700/60 p-2 text-white hover:bg-slate-700 dark:bg-slate-700/70 dark:hover:bg-slate-600 lg:hidden"
         onClick={() => setIsMenuOpen((p) => !p)}
       >
-        <IconMenu2 className="text-gray-200 hover:text-white dark:text-gray-300 dark:hover:text-white" size={24} />
+        <IconMenu2 size={22} />
       </button>
     </div>
   );

@@ -18,20 +18,20 @@ export default function ImageInput({ value, onChange }: ImageInputProps) {
     };
 
     return (
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-start gap-2">
             {value && (
-                <img src={value} alt={t('Preview')} className="mb-4 max-w-full h-auto rounded" />
+                <img src={value} alt={t('Preview')} className="max-h-40 w-auto max-w-full rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
             )}
             {!value && <input
                 type="file"
                 accept="image/*"
                 onChange={handleImageChange}
-                className="mb-2 w-full"
+                className="w-full cursor-pointer rounded-lg border border-slate-300 bg-white p-2.5 text-sm text-slate-900 outline-none transition file:mr-3 file:rounded-md file:border-0 file:bg-[#2d6880] file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white hover:file:bg-[#1e5770] focus:border-[#2d6880] focus:ring-2 focus:ring-[#92A7B4]/30 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
             />}
             {value && <button
                 type="button"
                 onClick={() => onChange('')}
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-700"
             >
                 {t('Clear Image')}
             </button>}

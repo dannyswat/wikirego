@@ -28,15 +28,18 @@ export function SettingMenu({ returnUrl }: { returnUrl?: string }) {
 
   return (
     <div className="relative inline-block">
-      <button onClick={() => setIsOpen((p) => !p)}>
+      <button
+        onClick={() => setIsOpen((p) => !p)}
+        className="rounded-md p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+      >
         <IconSettings
-          size={24}
+          size={22}
           className="inline transition hover:rotate-180"
         />
       </button>
       <div
         className={
-          "absolute right-0 w-48 py-2 mt-2 z-10 bg-white dark:bg-gray-800 text-left border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl " +
+          "absolute right-0 z-10 mt-2 w-56 rounded-lg border border-slate-200 bg-white py-2 text-left shadow-lg dark:border-slate-700 dark:bg-slate-900 " +
           (isOpen ? "block" : "hidden")
         }
       >
@@ -44,42 +47,43 @@ export function SettingMenu({ returnUrl }: { returnUrl?: string }) {
           <>
             <button
               onClick={() => navigate("/users")}
-              className="w-full box-border px-4 py-2 text-left text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
+              className="box-border w-full px-4 py-2 text-left text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
             >
               {t('Users')}
             </button>
             <button onClick={() => navigate("/site-setting")}
-              className="w-full box-border px-4 py-2 text-left text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
+              className="box-border w-full px-4 py-2 text-left text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
             >
               {t('Site Setting')}
             </button>
             <button
               onClick={() => navigate("/security-setting")}
-              className="w-full box-border px-4 py-2 text-left text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
+              className="box-border w-full px-4 py-2 text-left text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
             >
               {t('Security Setting')}
             </button>
             <button onClick={() => navigate("/filebrowser")}
-              className="w-full box-border px-4 py-2 text-left text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
+              className="box-border w-full px-4 py-2 text-left text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
             >
               {t('File Browser')}
             </button>
             <button onClick={() => navigate('/page-admin')}
-              className="w-full box-border px-4 py-2 text-left text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
+              className="box-border w-full px-4 py-2 text-left text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
             >
               {t('Admin Operations')}
             </button>
+            <div className="my-1 border-t border-slate-200 dark:border-slate-700" />
           </>
         )}
         <button
           onClick={() => navigate("/change-password")}
-          className="w-full box-border px-4 py-2 text-left text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
+          className="box-border w-full px-4 py-2 text-left text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
         >
           {t('Change Password')}
         </button>
         <button
           onClick={() => logout.mutate()}
-          className="w-full box-border px-4 py-2 text-left text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
+          className="box-border w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
         >
           {t('Logout')}
         </button>

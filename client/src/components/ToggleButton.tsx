@@ -9,11 +9,11 @@ interface ToggleButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonEl
 export default function ToggleButton({ className, checked, onChange, label, ...props }: ToggleButtonProps) {
 
     return (
-        <button className={'inline-block cursor-pointer' + (className ? ' ' + className : '')} {...props}
+        <button className={'inline-flex items-center rounded-md px-1 py-1 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 ' + (className ? ' ' + className : '')} {...props}
             onClick={() => onChange(!checked)}>
-            {checked && <IconCheck className="mr-2 inline-block text-green-700 dark:text-green-500" />}
-            {!checked && <IconCrop11 className="mr-2 inline-block" />}
-            <label className="inline-block">{label}</label>
+            {checked && <IconCheck size={16} className="mr-2 inline-block text-emerald-600 dark:text-emerald-400" />}
+            {!checked && <IconCrop11 size={16} className="mr-2 inline-block text-slate-400 dark:text-slate-500" />}
+            <label className="inline-block cursor-pointer">{label}</label>
         </button>
     );
 }

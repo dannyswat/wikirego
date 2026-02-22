@@ -40,24 +40,30 @@ export default function Search() {
     };
 
     return (
-        <div className="w-full flex flex-col gap-4">
-            <section className="flex flex-row items-center">
+        <div className="w-full rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900 sm:p-6">
+            <div className="mb-5 flex flex-wrap items-start justify-between gap-2">
+                <h1 className="text-2xl font-semibold tracking-tight text-[#1e5770] dark:text-[#92A7B4]">
+                    {t("Search")}
+                </h1>
+            </div>
+
+            <section className="flex flex-col items-center gap-3 sm:flex-row">
                 <input
                     type="text"
                     value={searchQuery}
                     onChange={handleSearchQueryChange}
                     placeholder={t("Enter search query")}
-                    className="basis-3/4 border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md p-2"
+                    className="w-full rounded-lg border border-slate-200 bg-white p-2.5 text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 sm:flex-1"
                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 />
-                <div className="basis-1/4 flex justify-end ps-2">
+                <div className="w-full sm:w-auto">
                     <button
                         onClick={handleSearch}
                         disabled={loading}
-                        className="bg-lime-700 hover:bg-lime-800 dark:bg-lime-600 dark:hover:bg-lime-700 text-white rounded-md py-2 px-5 box-border"
+                        className="w-full rounded-lg bg-[#2d6880] px-5 py-2.5 text-white hover:bg-[#1e5770] disabled:opacity-70 sm:w-auto"
                     >
                         {loading ? (
-                            <IconFidgetSpinner className="animate-spin mx-auto" />
+                            <IconFidgetSpinner className="mx-auto animate-spin" />
                         ) : (
                             t("Search")
                         )}
@@ -66,29 +72,29 @@ export default function Search() {
             </section>
 
             {error && (
-                <section className="flex flex-row">
-                    <div className="w-full p-3 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-200 rounded-md">
+                <section className="mt-4 flex flex-row">
+                    <div className="w-full rounded-md border border-red-300 bg-red-50 p-3 text-red-700 dark:border-red-700 dark:bg-red-900/20 dark:text-red-300">
                         {error}
                     </div>
                 </section>
             )}
 
             {searchResults && searchResults.length > 0 && (
-                <section>
-                    <h2 className="text-lg font-semibold mb-4">
+                <section className="mt-5">
+                    <h2 className="mb-4 text-lg font-medium text-slate-700 dark:text-slate-200">
                         {t("Search Results for")} "{activeSearchQuery}" ({searchResults.length})
                     </h2>
                     <div className="space-y-3">
                         {searchResults.map((page) => (
-                            <div key={page.id} className="border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-md p-4">
+                            <div key={page.id} className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800/40 dark:hover:bg-slate-800/60">
                                 <a
                                     href={`/p${page.url}`}
-                                    className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium text-lg"
+                                    className="text-lg font-medium text-[#2d6880] hover:text-[#1e5770] dark:text-[#92A7B4] dark:hover:text-[#c0d4dd]"
                                 >
                                     {page.title}
                                 </a>
                                 {page.url && (
-                                    <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                    <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                                         {page.url}
                                     </div>
                                 )}
@@ -99,8 +105,8 @@ export default function Search() {
             )}
 
             {searchQuery && !loading && searchResults?.length === 0 && !error && (
-                <section className="flex flex-row">
-                    <div className="w-full text-center py-8 text-gray-500 dark:text-gray-400 border-2 border-gray-200 dark:border-gray-700 rounded-md">
+                <section className="mt-4 flex flex-row">
+                    <div className="w-full rounded-md border border-slate-200 py-8 text-center text-slate-500 dark:border-slate-700 dark:text-slate-400">
                         {t("No pages found for")} "{activeSearchQuery}"
                     </div>
                 </section>

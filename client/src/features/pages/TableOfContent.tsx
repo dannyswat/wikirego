@@ -68,21 +68,27 @@ export default function TableOfContent({ title, content }: TableOfContentProps) 
     }
 
     return (
-
-        <div className="hidden lg:block flex-shrink-0 w-64">
-            <div className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg sticky top-4">
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                    <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                        {title || 'Table of Contents'}
-                    </h4>
+        <aside className="hidden xl:block">
+            <div className="sticky top-24 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+                <div className="mb-2 border-b border-slate-200 pb-3 dark:border-slate-800">
+                    <h4 className="text-sm font-medium text-[#1e5770] dark:text-[#92A7B4]">On this page</h4>
+                    <p className="mt-1 line-clamp-1 text-xs text-slate-500 dark:text-slate-400">{title || 'Table of Contents'}</p>
                 </div>
-                <nav className="p-4">
+                <nav className="pt-1">
                     <ul className="space-y-1">
                         {headings.map(({ id, text, level }) => (
                             <li key={id}>
                                 <button
                                     onClick={() => scrollToHeading(id)}
-                                    className={`block w-full py-1 text-left text-sm/4 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-gray-700 dark:text-gray-300 ${level === 1 ? 'ps-0' : level === 2 ? 'ps-4' : level === 3 ? 'ps-8' : level === 4 ? 'ps-12' : 'ps-0'
+                                    className={`block w-full rounded-md py-1.5 text-left text-sm leading-5 text-slate-600 transition-colors hover:bg-slate-100 hover:text-[#2d6880] dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-[#92A7B4] ${level === 1
+                                            ? 'ps-1'
+                                            : level === 2
+                                                ? 'ps-4'
+                                                : level === 3
+                                                    ? 'ps-7'
+                                                    : level === 4
+                                                        ? 'ps-10'
+                                                        : 'ps-1'
                                         }`}
                                 >
                                     {text}
@@ -92,6 +98,6 @@ export default function TableOfContent({ title, content }: TableOfContentProps) 
                     </ul>
                 </nav>
             </div>
-        </div>
+        </aside>
     );
 }

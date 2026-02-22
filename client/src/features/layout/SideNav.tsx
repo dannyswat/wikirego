@@ -47,7 +47,11 @@ export default function SideNav({
   }, [menu]);
 
   if (isLoading) {
-    return <p>Loading...</p>;
+    return (
+      <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+        {t("Loading")}...
+      </div>
+    );
   }
 
   function handleMenuItemClick(page: PageMetaObject) {
@@ -63,14 +67,26 @@ export default function SideNav({
   return (
     <nav
       className={
-        "w-1/4 bg-white dark:bg-[#332F2F] text-gray-900 dark:text-gray-100 p-4 overflow-y-auto" +
+        "overflow-y-auto" +
         (className ? " " + className : "")
       }
       {...props}
     >
       {headerComponent}
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-sm font-medium text-[#1e5770] dark:text-[#92A7B4]">{t("Pages")}</h2>
+        {isLoggedIn && (
+          <button
+            onClick={() => navigate("/create")}
+            className="rounded-md px-2 py-1 text-xs text-[#2d6880] hover:bg-slate-100 dark:text-[#92A7B4] dark:hover:bg-slate-800"
+          >
+            {t("Create")}
+          </button>
+        )}
+      </div>
+
       {root && (
-        <ul className="space-t-2 mt-4 sm:mt-0">
+        <ul className="mt-2 space-y-1">
           <li>
             <button
               onClick={() =>
@@ -78,7 +94,7 @@ export default function SideNav({
                   lastRoot.current.length ? lastRoot.current.pop() : undefined
                 )
               }
-              className="w-full text-left box-border hover:bg-gray-300 dark:hover:bg-gray-700 py-2 px-5 rounded"
+              className="w-full rounded-md px-3 py-2 text-left text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
             >
               <i className="mr-2">&larr;</i>
               {t("Back")}
@@ -87,19 +103,20 @@ export default function SideNav({
           <li>
             <button
               onClick={() => navigate("/p" + root.url)}
-              className="w-full text-left box-border font-bold hover:bg-gray-300 dark:hover:bg-gray-700 py-2 px-5 rounded"
+              className="w-full rounded-md bg-slate-100 px-3 py-2 text-left text-sm font-medium text-[#1e5770] dark:bg-slate-800 dark:text-[#92A7B4]"
             >
               {root.title}
             </button>
           </li>
         </ul>
       )}
-      <ul className={"space-b-2" + (root ? "" : " mt-4 sm:mt-0")}>
+
+      <ul className={"space-y-1" + (root ? " mt-2" : " mt-1") }>
         {(root ? root.children : menu).map((page) => (
           <li key={page.id}>
             <button
               onClick={() => handleMenuItemClick(page)}
-              className="w-full text-left box-border hover:bg-gray-300 dark:hover:bg-gray-700 py-2 px-5 rounded"
+              className="w-full rounded-md px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
             >
               {page.title}
               {page.children && page.children.length > 0 && (
@@ -108,19 +125,21 @@ export default function SideNav({
             </button>
           </li>
         ))}
-        {isLoggedIn && <li>
-          <button
-            onClick={() =>
-              navigate(
-                "/create" +
-                (root ? "?parent=" + encodeURIComponent(root.url) : "")
-              )
-            }
-            className="w-full text-left text-gray-500 dark:text-gray-400 box-border hover:bg-gray-300 dark:hover:bg-gray-700 py-2 px-5 rounded"
-          >
-            {t("Create New Page")}
-          </button>
-        </li>}
+        {isLoggedIn && (
+          <li>
+            <button
+              onClick={() =>
+                navigate(
+                  "/create" +
+                  (root ? "?parent=" + encodeURIComponent(root.url) : "")
+                )
+              }
+              className="w-full rounded-md px-3 py-2 text-left text-sm text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+            >
+              {t("Create New Page")}
+            </button>
+          </li>
+        )}
       </ul>
       {footerComponent}
     </nav>

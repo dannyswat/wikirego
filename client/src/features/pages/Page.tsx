@@ -41,23 +41,35 @@ export default function Page() {
   if (!data) return <div>{t("Page not found")}</div>;
 
   return (
-    <div className="flex gap-6">
-      <div className="flex-1 min-w-0">
-        <h1 className="text-3xl font-semibold tracking-tight mb-1 text-[#1e5770] dark:text-[#92A7B4]">
-          {data.title}
-        </h1>
-        <p className="text-sm px-0.5 mb-6 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">{data.shortDesc}</p>
+    <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_280px] xl:gap-6">
+      <div className="min-w-0 rounded-xl border border-slate-200 bg-white p-5 sm:p-7 dark:border-slate-800 dark:bg-slate-900">
+        <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              {data.url}
+            </p>
+            <h1 className="mb-1 mt-1 text-3xl font-semibold tracking-tight text-[#1e5770] dark:text-[#92A7B4]">
+              {data.title}
+            </h1>
+            {data.shortDesc && (
+              <p className="text-sm text-slate-500 dark:text-slate-400">{data.shortDesc}</p>
+            )}
+          </div>
+        </div>
+
         <div
           className="ck-content overflow-x-auto break-words"
           dangerouslySetInnerHTML={{ __html: data.content || "" }}
         ></div>
+
         {isLoadingAllPages && (
-          <div className="flex justify-center mt-4">
-            <IconFidgetSpinner className="animate-spin text-gray-500" />
+          <div className="mt-4 flex justify-center">
+            <IconFidgetSpinner className="animate-spin text-slate-500" />
           </div>
         )}
+
         {data.isCategoryPage && pageMeta && pageMeta.children.length > 0 && (
-          <div className="mt-4">
+          <div className="mt-8 border-t border-slate-200 pt-5 dark:border-slate-800">
             <PageList
               pages={pageMeta.children}
               onPageClick={(page) => {
@@ -67,6 +79,7 @@ export default function Page() {
           </div>
         )}
       </div>
+
       {data.content && (
         <TableOfContent title={data.title} content={data.content} />
       )}

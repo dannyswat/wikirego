@@ -5,9 +5,11 @@ import { IconClearAll, IconMenu2 } from '@tabler/icons-react';
 import { Footer } from './Footer';
 import { SettingMenu } from './SettingMenu';
 import SiteLogo from '../../components/SiteLogo';
+import { useTheme } from '../../contexts/ThemeProvider';
 
 export default function LayoutAdmin() {
     const navigate = useNavigate();
+    const { theme } = useTheme();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     function navigateTo(path: string) {
@@ -16,29 +18,42 @@ export default function LayoutAdmin() {
     }
 
     return (
-        <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900">
-            <header className="flex justify-between items-center p-2 bg-[#332F2F] text-white">
-                <div className="text-xl font-bold">
-                    <button className="p-2 sm:hidden" onClick={() => setIsMenuOpen((p) => !p)}>
-                        <IconMenu2 className="hover:text-gray-200 dark:hover:text-gray-300" size={24} />
-                    </button>
-                    <NavLink className="hidden sm:inline" to="/">
-                        <SiteLogo />
-                    </NavLink>
-                </div>
-                <div className="space-x-4 text-right">
-                    <SettingMenu />
+        <div className="flex min-h-screen flex-col bg-slate-100 text-slate-800 dark:bg-slate-950 dark:text-slate-200">
+            <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90">
+                <div className="mx-auto flex h-16 max-w-[1600px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center gap-2">
+                        <button
+                            className="rounded-md p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 lg:hidden"
+                            onClick={() => setIsMenuOpen((p) => !p)}
+                        >
+                            <IconMenu2 size={22} />
+                        </button>
+                        <NavLink className="inline-flex" to="/">
+                            <SiteLogo isLight={theme === 'light'} />
+                        </NavLink>
+                    </div>
+                    <div className="space-x-4 text-right">
+                        <SettingMenu />
+                    </div>
                 </div>
             </header>
-            <div className="flex flex-1">
-                <div className={`${isMenuOpen ? 'block' : 'hidden'} sm:hidden fixed inset-0 bg-black dark:bg-black bg-opacity-50 dark:bg-opacity-70 z-10`} onClick={() => setIsMenuOpen(false)}></div>
-                <SideNav
-                    navigate={navigateTo}
-                    className={`fixed inset-0 w-full ${isMenuOpen ? 'block' : 'hidden'} sm:block sm:relative sm:w-1/4 z-20`}
-                    headerComponent={<button className="absolute right-4 top-4 sm:hidden hover:text-gray-700 dark:hover:text-gray-300" onClick={() => setIsMenuOpen(false)}><IconClearAll height={24} /></button>}
-                />
-                <div className="flex-1 p-4 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-                    <Outlet />
+
+            <div className="mx-auto flex w-full max-w-[1600px] flex-1 px-4 sm:px-6 lg:px-8">
+                <div
+                    className={`${isMenuOpen ? 'block' : 'hidden'} fixed inset-0 z-20 bg-black/50 dark:bg-black/70 lg:hidden`}
+                    onClick={() => setIsMenuOpen(false)}
+                ></div>
+
+                <div className="grid w-full grid-cols-1 gap-4 py-4 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-6 lg:py-6">
+                    <SideNav
+                        navigate={navigateTo}
+                        className={`fixed inset-y-0 left-0 z-30 w-[85%] max-w-sm rounded-r-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 ${isMenuOpen ? 'block' : 'hidden'} lg:sticky lg:top-24 lg:block lg:h-[calc(100vh-7rem)] lg:w-auto lg:max-w-none lg:rounded-xl`}
+                        headerComponent={<button className="absolute right-4 top-4 rounded-md p-1 text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 lg:hidden" onClick={() => setIsMenuOpen(false)}><IconClearAll height={22} /></button>}
+                    />
+
+                    <div className="min-w-0 rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900 sm:p-6">
+                        <Outlet />
+                    </div>
                 </div>
             </div>
             <Footer />

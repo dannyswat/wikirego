@@ -17,35 +17,37 @@ export default function Users() {
     if (isLoading) return <div>{t("Loading")}</div>;
     if (isError) return <div>{t("Error loading users")}</div>;
 
-    return <div className="w-full">
-        <h1 className="text-2xl font-semibold">{t("Users")}</h1>
-        <div className="flex justify-end">
-            <NavLink to="/users/create" className="bg-blue-500 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-800 text-white font-bold py-2 px-4 rounded">{t("Add User")}</NavLink>
+    return <div className="w-full rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900 sm:p-6">
+        <div className="mb-4 flex items-center justify-between">
+            <h1 className="text-2xl font-semibold tracking-tight text-[#1e5770] dark:text-[#92A7B4]">{t("Users")}</h1>
+            <NavLink to="/users/create" className="rounded-lg bg-[#2d6880] px-4 py-2 text-sm font-medium text-white hover:bg-[#1e5770]">{t("Add User")}</NavLink>
         </div>
-        <div className="table w-full my-2">
-            <div className="table-header-group">
-                <div className="table-row bg-gray-700 dark:bg-gray-800 text-white">
 
-                    <div className="table-cell border border-gray-400 dark:border-gray-600 px-4 py-2 font-bold">{t("Username")}</div>
-                    <div className="hidden sm:table-cell border border-gray-400 dark:border-gray-600 px-4 py-2 font-bold">{t("Email")}</div>
-                    <div className="table-cell border border-gray-400 dark:border-gray-600 px-4 py-2 font-bold">{t("Role")}</div>
-                    <div className="table-cell border border-gray-400 dark:border-gray-600 px-4 py-2 font-bold">{t("Status")}</div>
-                    <div className="table-cell border border-gray-400 dark:border-gray-600 px-4 py-2 font-bold"></div>
-                </div>
-            </div>
-            <div className="table-row-group">
-                {users?.map(user => (
-                    <div className="table-row" key={user.id}>
-                        <div className="table-cell border border-gray-400 dark:border-gray-600 px-4 py-2">{user.username}</div>
-                        <div className="hidden sm:table-cell border border-gray-400 dark:border-gray-600 px-4 py-2">{user.email}</div>
-                        <div className="table-cell border border-gray-400 dark:border-gray-600 px-4 py-2">{user.role}</div>
-                        <div className="table-cell border border-gray-400 dark:border-gray-600 px-4 py-2 text-center">{user.isLockedOut && <IconLock size={24} />}</div>
-                        <div className="table-cell border border-gray-400 dark:border-gray-600 px-4 py-2 text-center">
-                            <NavLink to={`/users/${user.id}`} className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">{t("Edit")}</NavLink>
-                        </div>
-                    </div>
-                ))}
-            </div>
+        <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
+            <table className="min-w-full border-collapse">
+                <thead>
+                    <tr className="bg-slate-50 dark:bg-slate-800/50">
+                        <th className="border-b border-slate-200 px-4 py-2 text-left text-sm font-medium text-slate-700 dark:border-slate-700 dark:text-slate-200">{t("Username")}</th>
+                        <th className="hidden border-b border-slate-200 px-4 py-2 text-left text-sm font-medium text-slate-700 dark:border-slate-700 dark:text-slate-200 sm:table-cell">{t("Email")}</th>
+                        <th className="border-b border-slate-200 px-4 py-2 text-left text-sm font-medium text-slate-700 dark:border-slate-700 dark:text-slate-200">{t("Role")}</th>
+                        <th className="border-b border-slate-200 px-4 py-2 text-center text-sm font-medium text-slate-700 dark:border-slate-700 dark:text-slate-200">{t("Status")}</th>
+                        <th className="border-b border-slate-200 px-4 py-2 text-center text-sm font-medium text-slate-700 dark:border-slate-700 dark:text-slate-200"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {users?.map((user) => (
+                        <tr key={user.id} className="odd:bg-white even:bg-slate-50/70 dark:odd:bg-slate-900 dark:even:bg-slate-800/40">
+                            <td className="border-b border-slate-200 px-4 py-2 text-sm dark:border-slate-700">{user.username}</td>
+                            <td className="hidden border-b border-slate-200 px-4 py-2 text-sm dark:border-slate-700 sm:table-cell">{user.email}</td>
+                            <td className="border-b border-slate-200 px-4 py-2 text-sm dark:border-slate-700">{user.role}</td>
+                            <td className="border-b border-slate-200 px-4 py-2 text-center dark:border-slate-700">{user.isLockedOut && <IconLock size={18} className="mx-auto text-amber-500" />}</td>
+                            <td className="border-b border-slate-200 px-4 py-2 text-center text-sm dark:border-slate-700">
+                                <NavLink to={`/users/${user.id}`} className="font-medium text-[#2d6880] hover:text-[#1e5770] dark:text-[#92A7B4] dark:hover:text-[#c0d4dd]">{t("Edit")}</NavLink>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
         </div>
     </div>
 }

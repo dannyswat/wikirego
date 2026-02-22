@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wiki Rego — Layout Revamp (Design 1)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef4f7',
+              100: '#d8e5ec',
+              200: '#c0d4dd',
+              300: '#a8c0cc',
+              400: '#92A7B4',
+              500: '#4d8fa8',
+              600: '#3a7a94',
+              700: '#2d6880',
+              800: '#1e5770',
+              900: '#17465b'
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="h-full bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-200">
+  <div class="min-h-full">
+    <header class="sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur">
+      <div class="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
+        <div class="h-16 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <button id="menuButton" class="lg:hidden rounded-md p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800" aria-label="Toggle navigation">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <a href="#" class="inline-flex items-center gap-2">
+              <div class="h-8 w-8 rounded-lg bg-brand-800 text-white grid place-items-center font-semibold">W</div>
+              <div>
+                <p class="text-sm font-medium leading-none text-brand-800 dark:text-brand-300">wiki rego</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Knowledge Base</p>
+              </div>
+            </a>
+          </div>
+
+          <div class="hidden md:flex flex-1 max-w-xl mx-3">
+            <div class="relative w-full">
+              <input type="text" value="architecture decision" readonly class="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-10 py-2 text-sm text-slate-700 dark:text-slate-200" />
+              <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3 top-2.5 h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <a href="#" class="hidden sm:inline-flex rounded-lg bg-brand-700 hover:bg-brand-800 text-white text-sm px-3 py-2">Create</a>
+            <a href="#" class="hidden sm:inline-flex rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm px-3 py-2">Edit</a>
+            <button id="themeToggle" class="rounded-md p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800" aria-label="Toggle theme">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m8.66-10h-1M4.34 12h-1m14.95 6.95l-.7-.7M6.41 6.41l-.7-.7m12.02 0l-.7.7M6.41 17.59l-.7.7M12 8a4 4 0 100 8 4 4 0 000-8z" />
+              </svg>
+            </button>
+            <button class="rounded-full h-9 w-9 bg-brand-100 text-brand-800 dark:bg-brand-900/40 dark:text-brand-200 text-sm font-medium">DR</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8 py-4 lg:py-6">
+      <div class="grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)_280px] gap-4 lg:gap-6">
+
+        <aside id="leftNav" class="hidden lg:block rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 h-fit lg:sticky lg:top-24">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-medium text-brand-800 dark:text-brand-300">Page Tree</h2>
+            <a href="#" class="text-xs text-brand-700 dark:text-brand-300">New Page</a>
+          </div>
+          <nav class="space-y-1 text-sm">
+            <a href="#" class="block rounded-md px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Home</a>
+            <div class="rounded-md bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-900/40">
+              <a href="#" class="block px-3 py-2 font-medium text-brand-800 dark:text-brand-300">Engineering</a>
+              <div class="pb-2">
+                <a href="#" class="block px-8 py-1.5 text-slate-600 dark:text-slate-300 hover:text-brand-700 dark:hover:text-brand-300">Architecture</a>
+                <a href="#" class="block px-8 py-1.5 text-slate-600 dark:text-slate-300 hover:text-brand-700 dark:hover:text-brand-300">System Design</a>
+                <a href="#" class="block px-8 py-1.5 text-brand-800 dark:text-brand-300 font-medium">ADR: API Gateway</a>
+              </div>
+            </div>
+            <a href="#" class="block rounded-md px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Product</a>
+            <a href="#" class="block rounded-md px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Operations</a>
+            <a href="#" class="block rounded-md px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Meeting Notes</a>
+          </nav>
+
+          <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+            <h3 class="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Admin Shortcuts</h3>
+            <div class="space-y-1 text-sm">
+              <a href="#" class="block rounded-md px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Users</a>
+              <a href="#" class="block rounded-md px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Site Setting</a>
+              <a href="#" class="block rounded-md px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Security Setting</a>
+              <a href="#" class="block rounded-md px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">File Browser</a>
+            </div>
+          </div>
+        </aside>
+
+        <main class="min-w-0">
+          <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-7">
+            <div class="flex flex-wrap items-start justify-between gap-3 mb-5">
+              <div>
+                <p class="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">Engineering / Architecture</p>
+                <h1 class="text-3xl font-semibold tracking-tight text-brand-800 dark:text-brand-300 mt-1">ADR: API Gateway Strategy</h1>
+                <p class="text-sm mt-2 text-slate-500 dark:text-slate-400">Short description: Why we adopted a gateway-first approach for external traffic and service composition.</p>
+              </div>
+              <div class="text-xs text-slate-500 dark:text-slate-400 text-right">
+                <p>Updated by Danny</p>
+                <p>Feb 22, 2026 · Rev 18</p>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2 mb-6">
+              <span class="inline-flex items-center rounded-md bg-brand-50 dark:bg-brand-900/20 px-2 py-1 text-xs text-brand-700 dark:text-brand-300">#architecture</span>
+              <span class="inline-flex items-center rounded-md bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 text-xs text-emerald-700 dark:text-emerald-300">#decision-record</span>
+              <span class="inline-flex items-center rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-1 text-xs text-slate-600 dark:text-slate-300">readonly for viewers</span>
+            </div>
+
+            <article class="prose prose-slate dark:prose-invert max-w-none">
+              <h2 class="text-2xl font-semibold text-brand-700 dark:text-brand-300 border-b border-slate-200 dark:border-slate-700 pb-1">Context</h2>
+              <p class="text-slate-700 dark:text-slate-300">Our prior direct-service model created inconsistent authentication, repeated rate limiting logic, and difficult cross-service tracing. We need a single entry point for policy and observability.</p>
+
+              <h3 class="text-xl font-medium text-brand-600 dark:text-sky-300">Decision</h3>
+              <p class="text-slate-700 dark:text-slate-300">Adopt an API gateway layer for all public HTTP traffic. Keep internal service-to-service communication independent while enforcing security and quotas at the gateway boundary.</p>
+
+              <h4 class="text-sm font-medium uppercase tracking-widest text-brand-500 dark:text-cyan-300">Implementation Notes</h4>
+              <ul class="list-disc pl-6 text-slate-700 dark:text-slate-300">
+                <li>Centralized JWT validation and request logging.</li>
+                <li>Per-route rate limit policy by role and endpoint sensitivity.</li>
+                <li>Consistent error envelopes for client apps.</li>
+              </ul>
+
+              <blockquote class="my-4 rounded-r-md border-l-4 border-brand-400 bg-slate-50 dark:bg-slate-800/40 px-4 py-2 text-slate-600 dark:text-slate-300">Gateway ownership remains with platform team; product teams own downstream service contracts.</blockquote>
+
+              <pre class="rounded-lg bg-slate-800 p-4 text-slate-100 overflow-x-auto"><code>GET /api/v1/wiki/search?q=architecture
+Authorization: Bearer &lt;token&gt;
+X-Request-Id: 8f1946f1</code></pre>
+
+              <table class="w-full border-collapse text-sm mt-4">
+                <thead>
+                  <tr>
+                    <th class="border border-slate-200 dark:border-slate-700 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300 p-2 font-medium">Option</th>
+                    <th class="border border-slate-200 dark:border-slate-700 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300 p-2 font-medium">Pros</th>
+                    <th class="border border-slate-200 dark:border-slate-700 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300 p-2 font-medium">Cons</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="border border-slate-200 dark:border-slate-700 p-2">Direct services</td>
+                    <td class="border border-slate-200 dark:border-slate-700 p-2">Low latency, simple infra</td>
+                    <td class="border border-slate-200 dark:border-slate-700 p-2">Policy duplication</td>
+                  </tr>
+                  <tr class="bg-slate-50 dark:bg-slate-800/30">
+                    <td class="border border-slate-200 dark:border-slate-700 p-2">Gateway-first</td>
+                    <td class="border border-slate-200 dark:border-slate-700 p-2">Unified security & telemetry</td>
+                    <td class="border border-slate-200 dark:border-slate-700 p-2">Added component to operate</td>
+                  </tr>
+                </tbody>
+              </table>
+            </article>
+
+            <div class="mt-8 border-t border-slate-200 dark:border-slate-800 pt-5 flex flex-wrap gap-2">
+              <a href="#" class="rounded-md border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-800">View Revisions</a>
+              <a href="#" class="rounded-md border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-800">Compare Changes</a>
+              <a href="#" class="rounded-md border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-800">Open in Editor</a>
+            </div>
+          </div>
+        </main>
+
+        <aside class="space-y-4">
+          <section class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 h-fit lg:sticky lg:top-24">
+            <h2 class="text-sm font-medium text-brand-800 dark:text-brand-300 mb-2">On this page</h2>
+            <nav class="space-y-1 text-sm">
+              <a href="#" class="block text-brand-700 dark:text-brand-300">Context</a>
+              <a href="#" class="block text-slate-600 dark:text-slate-300">Decision</a>
+              <a href="#" class="block text-slate-600 dark:text-slate-300">Implementation Notes</a>
+              <a href="#" class="block text-slate-600 dark:text-slate-300">Trade-offs</a>
+            </nav>
+          </section>
+
+          <section class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+            <h2 class="text-sm font-medium text-brand-800 dark:text-brand-300 mb-3">Recent Activity</h2>
+            <ul class="space-y-3 text-sm">
+              <li>
+                <p class="text-slate-700 dark:text-slate-200">Updated <span class="text-brand-700 dark:text-brand-300">Security Model</span></p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">3 min ago by Danny</p>
+              </li>
+              <li>
+                <p class="text-slate-700 dark:text-slate-200">Created <span class="text-brand-700 dark:text-brand-300">Q1 Planning Notes</span></p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">18 min ago by Sarah</p>
+              </li>
+              <li>
+                <p class="text-slate-700 dark:text-slate-200">Uploaded <span class="text-brand-700 dark:text-brand-300">gateway-flow.svg</span></p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">54 min ago by Alex</p>
+              </li>
+            </ul>
+          </section>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const menuButton = document.getElementById('menuButton');
+    const leftNav = document.getElementById('leftNav');
+    const themeToggle = document.getElementById('themeToggle');
+    const root = document.documentElement;
+
+    menuButton?.addEventListener('click', () => {
+      leftNav?.classList.toggle('hidden');
+      leftNav?.classList.toggle('block');
+    });
+
+    themeToggle?.addEventListener('click', () => {
+      root.classList.toggle('dark');
+    });
+  </script>
+</body>
+
+</html>

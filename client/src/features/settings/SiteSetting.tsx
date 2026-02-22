@@ -50,58 +50,58 @@ export default function SiteSetting() {
         if (form) mutation.mutate(form);
     };
 
-    if (isLoading) return <div>{t('Loading...')}</div>;
-    if (error) return <div className="text-red-600 dark:text-red-400">{(error as Error).message}</div>;
+    if (isLoading) return <div className="text-slate-600 dark:text-slate-300">{t('Loading...')}</div>;
+    if (error) return <div className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-red-700 dark:border-red-700 dark:bg-red-900/20 dark:text-red-300">{(error as Error).message}</div>;
     if (!form) return null;
 
     return (
-        <div className="max-w-md mx-auto mt-4 p-6 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded shadow">
-            <h2 className="text-2xl font-bold mb-4">{t('Site Settings')}</h2>
+        <div className="mx-auto mt-2 w-full max-w-3xl rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6">
+            <h2 className="mb-5 text-2xl font-semibold tracking-tight text-[#1e5770] dark:text-[#92A7B4]">{t('Site Settings')}</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                    <label className="block mb-1 font-medium">{t('Site Name')}</label>
+                    <label className="mb-1 block text-sm font-medium text-slate-600 dark:text-slate-300">{t('Site Name')}</label>
                     <input
                         type="text"
                         name="site_name"
                         value={form.site_name || ''}
                         onChange={handleChange}
-                        className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 outline-none transition focus:border-[#2d6880] focus:ring-2 focus:ring-[#92A7B4]/30 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
                         required
                     />
                 </div>
                 <div>
-                    <label className="block mb-1 font-medium">{t('Site URL')}</label>
+                    <label className="mb-1 block text-sm font-medium text-slate-600 dark:text-slate-300">{t('Site URL')}</label>
                     <input
                         type="text"
                         name="site_url"
                         value={form.site_url || ''}
                         onChange={handleChange}
-                        className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 outline-none transition focus:border-[#2d6880] focus:ring-2 focus:ring-[#92A7B4]/30 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
                         required
                     />
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('Site URL description')}</p>
+                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t('Site URL description')}</p>
                 </div>
                 <div>
-                    <label className="block mb-1 font-medium">{t('Logo URL')}</label>
+                    <label className="mb-1 block text-sm font-medium text-slate-600 dark:text-slate-300">{t('Logo URL')}</label>
                     <ImageInput value={form.logo || ''} onChange={(value) => setForm({ ...form, logo: value })} />
                 </div>
                 <div>
-                    <label className="block mb-1 font-medium">{t('Theme')}</label>
+                    <label className="mb-1 block text-sm font-medium text-slate-600 dark:text-slate-300">{t('Theme')}</label>
                     <ThemeDropDown className="w-full" value={form.theme || ''} onChange={(theme) => setForm({ ...form, theme })} />
                 </div>
                 <div>
-                    <label className="block mb-1 font-medium">{t('Footer')}</label>
+                    <label className="mb-1 block text-sm font-medium text-slate-600 dark:text-slate-300">{t('Footer')}</label>
                     <input
                         type="text"
                         name="footer"
                         value={form.footer || ''}
                         onChange={handleChange}
-                        className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 outline-none transition focus:border-[#2d6880] focus:ring-2 focus:ring-[#92A7B4]/30 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
                         required
                     />
                 </div>
                 <div>
-                    <label className="block mb-1 font-medium">{t('Language')}</label>
+                    <label className="mb-1 block text-sm font-medium text-slate-600 dark:text-slate-300">{t('Language')}</label>
                     <LanguageDropDown
                         className="w-full"
                         value={form.language || ''}
@@ -114,15 +114,15 @@ export default function SiteSetting() {
                         name="is_site_protected"
                         checked={form.is_site_protected}
                         onChange={(e) => setForm({ ...form, is_site_protected: e.target.checked })}
-                        className="mr-2"
+                        className="mr-2 h-4 w-4 rounded border-slate-300 text-[#2d6880] focus:ring-[#92A7B4]/40 dark:border-slate-600"
                     />
-                    <label className="text-sm">{t('Protect Site (Enable this to restrict access to authorized users only)')}</label>
+                    <label className="text-sm text-slate-600 dark:text-slate-300">{t('Protect Site (Enable this to restrict access to authorized users only)')}</label>
                 </div>
-                {mutation.isError && <div className="text-red-600 dark:text-red-400">{(mutation.error as Error).message}</div>}
-                {mutation.isSuccess && <div className="text-green-600 dark:text-green-400">{t('Settings updated!')}</div>}
+                {mutation.isError && <div className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-700 dark:bg-red-900/20 dark:text-red-300">{(mutation.error as Error).message}</div>}
+                {mutation.isSuccess && <div className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:border-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300">{t('Settings updated!')}</div>}
                 <button
                     type="submit"
-                    className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white py-2 rounded disabled:opacity-50"
+                    className="w-full rounded-lg bg-[#2d6880] py-2.5 font-medium text-white transition hover:bg-[#1e5770] disabled:opacity-60"
                     disabled={mutation.status === 'pending'}
                 >
                     {mutation.status === 'pending' ? t('Saving...') : t('Save Settings')}
