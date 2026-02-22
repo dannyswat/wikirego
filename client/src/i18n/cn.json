@@ -175,6 +175,25 @@
         "Loading content": "加载内容中...",
         "No content available": "无可用内容",
         "Site URL": "站点网址",
-        "Site URL description": "您站点的基础网址，例如：https://example.com"
+        "Site URL description": "您站点的基础网址，例如：https://example.com",
+        "Pages": "页面",
+        "On this page": "本页目录",
+        "Setup": "设置向导",
+        "Setup Site Settings": "设置站点参数",
+        "Protect Site": "保护站点",
+        "Welcome back": "欢迎回来",
+        "Sign in to continue to your workspace.": "登录以继续访问您的工作区。",
+        "Team knowledge,": "团队知识，",
+        "always in sync.": "始终保持同步。",
+        "Organize documentation, architecture notes, and internal playbooks in one secure space.": "在一个安全空间中组织文档、架构笔记和内部手册。",
+        "Structured pages with nested navigation": "支持嵌套导航的结构化页面",
+        "Rich editing and revision history": "富文本编辑与版本历史",
+        "Password and passkey authentication": "密码与通行密钥认证",
+        "Security": "安全",
+        "Protect your Wiki Rego account.": "保护您的 Wiki Rego 账户。",
+        "Update your password regularly and manage passkeys for stronger authentication.": "定期更新密码并管理通行密钥以获得更强认证能力。",
+        "Account settings": "账户设置",
+        "Dark mode enabled": "已启用深色模式",
+        "Light mode enabled": "已启用浅色模式"
     }
 }

@@ -173,6 +173,25 @@
         "Loading content": "Loading content...",
         "No content available": "No content available",
         "Site URL": "Site URL",
-        "Site URL description": "The base URL of your site, e.g., https://example.com"
+        "Site URL description": "The base URL of your site, e.g., https://example.com",
+        "Pages": "Pages",
+        "On this page": "On this page",
+        "Setup": "Setup",
+        "Setup Site Settings": "Setup Site Settings",
+        "Protect Site": "Protect Site",
+        "Welcome back": "Welcome back",
+        "Sign in to continue to your workspace.": "Sign in to continue to your workspace.",
+        "Team knowledge,": "Team knowledge,",
+        "always in sync.": "always in sync.",
+        "Organize documentation, architecture notes, and internal playbooks in one secure space.": "Organize documentation, architecture notes, and internal playbooks in one secure space.",
+        "Structured pages with nested navigation": "Structured pages with nested navigation",
+        "Rich editing and revision history": "Rich editing and revision history",
+        "Password and passkey authentication": "Password and passkey authentication",
+        "Security": "Security",
+        "Protect your Wiki Rego account.": "Protect your Wiki Rego account.",
+        "Update your password regularly and manage passkeys for stronger authentication.": "Update your password regularly and manage passkeys for stronger authentication.",
+        "Account settings": "Account settings",
+        "Dark mode enabled": "Dark mode enabled",
+        "Light mode enabled": "Light mode enabled"
     }
 }

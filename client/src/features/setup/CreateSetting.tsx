@@ -42,7 +42,7 @@ export default function CreateSetting() {
         <div className="min-h-screen bg-gradient-to-br from-slate-100 via-slate-50 to-[#eef4f7] dark:from-slate-950 dark:via-slate-900 dark:to-[#0f1d24]">
             <div className="mx-auto flex min-h-screen max-w-[1200px] items-center justify-center px-4 py-10 sm:px-6 lg:px-8">
                 <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/60 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/30 sm:p-8">
-                    <p className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">Setup</p>
+                    <p className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">{t('Setup')}</p>
                     <h2 className="mb-5 mt-2 text-2xl font-semibold tracking-tight text-[#1e5770] dark:text-[#92A7B4]">{t('Setup Site Settings')}</h2>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>

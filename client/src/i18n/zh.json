@@ -175,6 +175,25 @@
         "Loading content": "載入內容中...",
         "No content available": "無可用內容",
         "Site URL": "網站網址",
-        "Site URL description": "您網站的基礎網址，例如：https://example.com"
+        "Site URL description": "您網站的基礎網址，例如：https://example.com",
+        "Pages": "頁面",
+        "On this page": "本頁目錄",
+        "Setup": "設定精靈",
+        "Setup Site Settings": "設定網站參數",
+        "Protect Site": "保護網站",
+        "Welcome back": "歡迎回來",
+        "Sign in to continue to your workspace.": "登入以繼續使用您的工作區。",
+        "Team knowledge,": "團隊知識，",
+        "always in sync.": "始終保持同步。",
+        "Organize documentation, architecture notes, and internal playbooks in one secure space.": "在一個安全空間中整理文件、架構筆記與內部手冊。",
+        "Structured pages with nested navigation": "具備巢狀導覽的結構化頁面",
+        "Rich editing and revision history": "豐富編輯與修訂歷史",
+        "Password and passkey authentication": "密碼與通行金鑰驗證",
+        "Security": "安全",
+        "Protect your Wiki Rego account.": "保護您的 Wiki Rego 帳號。",
+        "Update your password regularly and manage passkeys for stronger authentication.": "定期更新密碼並管理通行金鑰以獲得更強驗證能力。",
+        "Account settings": "帳號設定",
+        "Dark mode enabled": "已啟用深色模式",
+        "Light mode enabled": "已啟用淺色模式"
     }
 }

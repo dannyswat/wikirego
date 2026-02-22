@@ -71,22 +71,20 @@ export default function ChangePasswordPage() {
                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.16),transparent_35%),radial-gradient(circle_at_85%_60%,rgba(146,167,180,0.35),transparent_45%)]" />
                         <div className="relative z-10">
                             <p className="inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs uppercase tracking-wider text-slate-100">
-                                Security
+                                {t('Security')}
                             </p>
                             <h1 className="mt-5 text-3xl font-semibold tracking-tight">
-                                Protect your
-                                <br />
-                                Wiki Rego account.
+                                {t('Protect your Wiki Rego account.')}
                             </h1>
                             <p className="mt-4 max-w-sm text-sm text-slate-200/90">
-                                Update your password regularly and manage passkeys for stronger authentication.
+                                {t('Update your password regularly and manage passkeys for stronger authentication.')}
                             </p>
                         </div>
                     </section>
 
                     <section className="p-6 sm:p-8 lg:p-10">
                         <div className="mx-auto w-full max-w-md">
-                            <p className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">Account settings</p>
+                            <p className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">{t('Account settings')}</p>
                             <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[#1e5770] dark:text-[#92A7B4]">{t('Change Password')}</h2>
 
                             <div className="mt-6 space-y-4">
@@ -106,7 +104,7 @@ export default function ChangePasswordPage() {
                             <button className="mt-5 w-full rounded-lg bg-slate-600 p-2.5 font-medium text-white transition hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600" onClick={() => navigate('/')}>{t('Back')}</button>
 
                             <p className="mt-5 text-center text-xs text-slate-500 dark:text-slate-400">
-                                {theme === 'dark' ? 'Dark mode enabled' : 'Light mode enabled'}
+                                {theme === 'dark' ? t('Dark mode enabled') : t('Light mode enabled')}
                             </p>
                         </div>
                     </section>

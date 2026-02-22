@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface Heading {
     id: string;
@@ -12,6 +13,7 @@ interface TableOfContentProps {
 }
 
 export default function TableOfContent({ title, content }: TableOfContentProps) {
+    const { t } = useTranslation();
     const [headings, setHeadings] = useState<Heading[]>([]);
 
     useEffect(() => {
@@ -71,8 +73,8 @@ export default function TableOfContent({ title, content }: TableOfContentProps) 
         <aside className="hidden xl:block">
             <div className="sticky top-24 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
                 <div className="mb-2 border-b border-slate-200 pb-3 dark:border-slate-800">
-                    <h4 className="text-sm font-medium text-[#1e5770] dark:text-[#92A7B4]">On this page</h4>
-                    <p className="mt-1 line-clamp-1 text-xs text-slate-500 dark:text-slate-400">{title || 'Table of Contents'}</p>
+                    <h4 className="text-sm font-medium text-[#1e5770] dark:text-[#92A7B4]">{t('On this page')}</h4>
+                    <p className="mt-1 line-clamp-1 text-xs text-slate-500 dark:text-slate-400">{title || t('Table of Contents')}</p>
                 </div>
                 <nav className="pt-1">
                     <ul className="space-y-1">

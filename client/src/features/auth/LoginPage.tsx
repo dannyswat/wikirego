@@ -48,7 +48,7 @@ export default function LoginPage() {
 
       const credential = await navigator.credentials.get(credentialRequestOptions) as PublicKeyCredential;
       if (!credential) {
-        throw new Error("No credential received");
+        throw new Error(t("No credential received"));
       }
 
       return await finishPasskeyLogin(credential, sessionKey);
@@ -97,25 +97,25 @@ export default function LoginPage() {
                 Wiki Rego
               </p>
               <h1 className="mt-5 text-3xl font-semibold tracking-tight">
-                Team knowledge,
+                {t("Team knowledge,")}
                 <br />
-                always in sync.
+                {t("always in sync.")}
               </h1>
               <p className="mt-4 max-w-sm text-sm text-slate-200/90">
-                Organize documentation, architecture notes, and internal playbooks in one secure space.
+                {t("Organize documentation, architecture notes, and internal playbooks in one secure space.")}
               </p>
               <ul className="mt-8 space-y-3 text-sm text-slate-100/90">
                 <li className="flex items-center gap-2">
                   <span className="inline-block h-2 w-2 rounded-full bg-[#92A7B4]" />
-                  Structured pages with nested navigation
+                  {t("Structured pages with nested navigation")}
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="inline-block h-2 w-2 rounded-full bg-[#92A7B4]" />
-                  Rich editing and revision history
+                  {t("Rich editing and revision history")}
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="inline-block h-2 w-2 rounded-full bg-[#92A7B4]" />
-                  Password and passkey authentication
+                  {t("Password and passkey authentication")}
                 </li>
               </ul>
             </div>
@@ -123,9 +123,9 @@ export default function LoginPage() {
 
           <section className="p-6 sm:p-8 lg:p-10">
             <div className="mx-auto w-full max-w-md">
-              <p className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">Welcome back</p>
+              <p className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">{t("Welcome back")}</p>
               <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[#1e5770] dark:text-[#92A7B4]">{t("Login")}</h2>
-              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Sign in to continue to your workspace.</p>
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{t("Sign in to continue to your workspace.")}</p>
 
               <div className="mt-6 space-y-4">
                 <input
@@ -172,7 +172,7 @@ export default function LoginPage() {
               </div>
 
               <p className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400">
-                {theme === 'dark' ? 'Dark mode enabled' : 'Light mode enabled'}
+                {theme === 'dark' ? t('Dark mode enabled') : t('Light mode enabled')}
               </p>
             </div>
           </section>

@@ -173,6 +173,25 @@
         "Loading content": "Chargement du contenu...",
         "No content available": "Aucun contenu disponible",
         "Site URL": "URL du site",
-        "Site URL description": "L'URL de base de votre site, ex : https://example.com"
+        "Site URL description": "L'URL de base de votre site, ex : https://example.com",
+        "Pages": "Pages",
+        "On this page": "Sur cette page",
+        "Setup": "Configuration",
+        "Setup Site Settings": "Configurer les paramètres du site",
+        "Protect Site": "Protéger le site",
+        "Welcome back": "Bon retour",
+        "Sign in to continue to your workspace.": "Connectez-vous pour continuer vers votre espace de travail.",
+        "Team knowledge,": "Connaissance d'équipe,",
+        "always in sync.": "toujours synchronisée.",
+        "Organize documentation, architecture notes, and internal playbooks in one secure space.": "Organisez la documentation, les notes d’architecture et les guides internes dans un espace sécurisé.",
+        "Structured pages with nested navigation": "Pages structurées avec navigation imbriquée",
+        "Rich editing and revision history": "Édition riche et historique des révisions",
+        "Password and passkey authentication": "Authentification par mot de passe et passkey",
+        "Security": "Sécurité",
+        "Protect your Wiki Rego account.": "Protégez votre compte Wiki Rego.",
+        "Update your password regularly and manage passkeys for stronger authentication.": "Mettez à jour régulièrement votre mot de passe et gérez vos passkeys pour une authentification renforcée.",
+        "Account settings": "Paramètres du compte",
+        "Dark mode enabled": "Mode sombre activé",
+        "Light mode enabled": "Mode clair activé"
     }
 }
