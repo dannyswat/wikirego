@@ -125,6 +125,8 @@
   padding: 0.75rem;
   font-size: 0.875rem;
   font-family: inherit;
+  color: #111827;
+  caret-color: #111827;
   outline: none;
 }
 
@@ -388,4 +390,57 @@
   color: #4b5563;
   border-radius: 0 0.25rem 0.25rem 0;
   font-style: italic;
+}
+
+/* Dark mode styles */
+.dark .html-editor-wrapper.html-editor-fullscreen {
+  background: #111827;
+}
+
+.dark .html-editor-container {
+  background: #1f2937;
+  border-color: #4b5563;
+}
+
+.dark .toolbar {
+  background: #111827;
+  border-bottom-color: #4b5563;
+}
+
+.dark .toolbar-select {
+  color: #e5e7eb;
+  background: #1f2937;
+  border-color: #4b5563;
+}
+
+.dark .toolbar-select:hover {
+  border-color: #818cf8;
+}
+
+.dark .toolbar-button {
+  color: #e5e7eb;
+}
+
+.dark .toolbar-button:hover {
+  background: #374151;
+  color: #a5b4fc;
+}
+
+.dark .toolbar-button.active {
+  background: #312e81;
+  color: #c7d2fe;
+  border-color: #818cf8;
+}
+
+.dark .toolbar-divider {
+  background: #4b5563;
+}
+
+.dark .editor-input {
+  color: #e5e7eb;
+  caret-color: #e5e7eb;
+}
+
+.dark .editor-placeholder {
+  color: #9ca3af;
 }
