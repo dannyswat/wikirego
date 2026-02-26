@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { getAllPages } from "../pages/pageApi";
 import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { UserContext } from "../auth/UserProvider";
 import { buildTree, findItemHierarchyInTree, PageMetaObject } from "../pages/pageTree";
 
@@ -21,8 +21,7 @@ export default function SideNav({
   ...props
 }: SideNavProps) {
   const { t } = useTranslation();
-  const { id } = useParams();
-  const pageId = id ? window.location.pathname.substring(3) : "home";
+  const { pathname } = useLocation();
   const { isLoggedIn } = useContext(UserContext);
   const justNavigate = useNavigate();
   const { data, isLoading } = useQuery({
@@ -30,21 +29,42 @@ export default function SideNav({
     queryFn: getAllPages,
   });
   const menu = useMemo(() => (data ? buildTree(data) : []), [data]);
+  const currentPageUrl = useMemo(() => {
+    if (pathname === "/") return "/home";
+    if (!pathname.startsWith("/p/")) return "/home";
+    try {
+      return decodeURIComponent(pathname.substring(2));
+    } catch {
+      return pathname.substring(2);
+    }
+  }, [pathname]);
   const [root, setRoot] = useState<PageMetaObject>();
   const lastRoot = useRef<PageMetaObject[]>([]);
+  const initialized = useRef(false);
 
   useEffect(() => {
     if (menu.length === 0) return;
-    const hierarchy = findItemHierarchyInTree(menu, "/" + pageId);
-    if (hierarchy.length) {
+    const hierarchy = findItemHierarchyInTree(menu, currentPageUrl);
+
+    if (hierarchy.length >= 2) {
       lastRoot.current = [];
       for (let i = 0; i < hierarchy.length - 2; i++) {
         lastRoot.current.push(hierarchy[i]);
       }
-      setRoot(hierarchy[hierarchy.length - 2]);
+      if (!initialized.current) {
+        const page = hierarchy[hierarchy.length - 1];
+        const newRoot = hierarchy[hierarchy.length - 2];
+        setRoot(page.children?.length ? page : newRoot);
+        initialized.current = true;
+      }
+    }
+    else if (!initialized.current) {
+      const currPage = hierarchy[hierarchy.length - 1];
+      setRoot(currPage.children?.length ? currPage : undefined);
+      initialized.current = true;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [menu]);
+  }, [menu, currentPageUrl]);
 
   if (isLoading) {
     return (
@@ -64,6 +84,10 @@ export default function SideNav({
     justNavigate("/p" + page.url);
   }
 
+  function handleMenuBackClick() {
+    setRoot(lastRoot.current.length ? lastRoot.current.pop() : undefined);
+  }
+
   return (
     <nav
       className={
@@ -77,7 +101,10 @@ export default function SideNav({
         <h2 className="text-sm font-medium text-[#1e5770] dark:text-[#92A7B4]">{t("Pages")}</h2>
         {isLoggedIn && (
           <button
-            onClick={() => navigate("/create")}
+            onClick={() => navigate(
+                  "/create" +
+                  (root ? "?parent=" + encodeURIComponent(root.url) : "")
+                )}
             className="rounded-md px-2 py-1 text-xs text-[#2d6880] hover:bg-slate-100 dark:text-[#92A7B4] dark:hover:bg-slate-800"
           >
             {t("Create")}
@@ -89,11 +116,7 @@ export default function SideNav({
         <ul className="mt-2 space-y-1">
           <li>
             <button
-              onClick={() =>
-                setRoot(
-                  lastRoot.current.length ? lastRoot.current.pop() : undefined
-                )
-              }
+              onClick={handleMenuBackClick}
               className="w-full rounded-md px-3 py-2 text-left text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
             >
               <i className="mr-2">&larr;</i>

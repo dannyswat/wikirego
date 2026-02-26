@@ -1,4 +1,4 @@
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PageMeta, searchPages } from "./pageApi";
 import { IconFidgetSpinner } from "@tabler/icons-react";
@@ -10,6 +10,11 @@ export default function Search() {
     const [searchResults, setSearchResults] = useState<PageMeta[]>();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const searchInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        searchInputRef.current?.focus();
+    }, []);
 
     function handleSearchQueryChange(e: ChangeEvent<HTMLInputElement>) {
         setSearchQuery(e.target.value);
@@ -49,6 +54,7 @@ export default function Search() {
 
             <section className="flex flex-col items-center gap-3 sm:flex-row">
                 <input
+                    ref={searchInputRef}
                     type="text"
                     value={searchQuery}
                     onChange={handleSearchQueryChange}
