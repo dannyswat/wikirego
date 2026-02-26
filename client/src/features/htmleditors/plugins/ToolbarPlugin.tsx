@@ -327,9 +327,9 @@ export default function ToolbarPlugin({ isFullscreen, onToggleFullscreen, onOpen
         onChange={(e) => formatHeading(e.target.value as HeadingTagType | 'paragraph')}
       >
         <option value="paragraph">Normal</option>
-        <option value="h1">Heading 1</option>
-        <option value="h2">Heading 2</option>
-        <option value="h3">Heading 3</option>
+        <option value="h2">Heading 1</option>
+        <option value="h3">Heading 2</option>
+        <option value="h4">Heading 3</option>
       </select>
 
       {/* Font Size */}

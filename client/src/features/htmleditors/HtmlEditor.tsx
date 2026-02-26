@@ -26,7 +26,7 @@ import Prism from 'prismjs'
 import loadLanguages from 'prismjs/components/index'
 
 if (!(globalThis as { Prism?: typeof Prism }).Prism) {
-  ;(globalThis as { Prism?: typeof Prism }).Prism = Prism
+  (globalThis as { Prism?: typeof Prism }).Prism = Prism
   loadLanguages(['markup', 'json', 'javascript', 'typescript', 'python', 'csharp', 'cpp'])
 }
 
@@ -137,6 +137,7 @@ const theme = {
     h1: 'editor-heading-h1',
     h2: 'editor-heading-h2',
     h3: 'editor-heading-h3',
+    h4: 'editor-heading-h4',
   },
   list: {
     ul: 'editor-list-ul',
