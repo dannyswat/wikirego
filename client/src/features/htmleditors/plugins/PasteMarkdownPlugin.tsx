@@ -1,7 +1,16 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import { $generateNodesFromDOM } from '@lexical/html'
-import { $createParagraphNode, $getRoot, $getSelection, $isRangeSelection, type LexicalNode } from 'lexical'
+import {
+  $createParagraphNode,
+  $createTextNode,
+  $getRoot,
+  $getSelection,
+  $isDecoratorNode,
+  $isElementNode,
+  $isRangeSelection,
+  type LexicalNode,
+} from 'lexical'
 import { marked } from 'marked'
 
 /**
@@ -52,6 +61,37 @@ function convertMarkdownToHtml(markdown: string): string {
 
   // Double-sanitize via DOM to catch anything the renderer missed
   return sanitizeHtml(rawHtml)
+}
+
+function createFallbackNodesFromMarkdown(markdown: string): LexicalNode[] {
+  const blocks = markdown
+    .replace(/\r\n/g, '\n')
+    .split(/\n{2,}/)
+    .map((block) => block.trim())
+    .filter((block) => block.length > 0)
+
+  return blocks.map((block) => {
+    const paragraph = $createParagraphNode()
+    paragraph.append($createTextNode(block))
+    return paragraph
+  })
+}
+
+function normalizeTopLevelNodes(nodes: LexicalNode[]): LexicalNode[] {
+  const normalized: LexicalNode[] = []
+
+  nodes.forEach((node) => {
+    if ($isElementNode(node) || $isDecoratorNode(node)) {
+      normalized.push(node)
+      return
+    }
+
+    const paragraph = $createParagraphNode()
+    paragraph.append(node)
+    normalized.push(paragraph)
+  })
+
+  return normalized
 }
 
 interface PasteMarkdownPluginProps {
@@ -106,9 +146,15 @@ export default function PasteMarkdownPlugin({ show, onClose }: PasteMarkdownPlug
     editor.update(() => {
       const parser = new DOMParser()
       const dom = parser.parseFromString(html, 'text/html')
-      const nodes = $generateNodesFromDOM(editor, dom).filter((node) => {
+      let nodes = $generateNodesFromDOM(editor, dom).filter((node) => {
         return !(node.getType() === 'paragraph' && node.getTextContent().trim() === '')
       })
+
+      if (nodes.length === 0) {
+        nodes = createFallbackNodesFromMarkdown(markdown)
+      }
+
+      nodes = normalizeTopLevelNodes(nodes)
 
       if (nodes.length === 0) return
 
