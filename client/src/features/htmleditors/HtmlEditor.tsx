@@ -19,6 +19,7 @@ import { $getRoot, $insertNodes, TextNode, type EditorState, type LexicalEditor 
 import ToolbarPlugin from './plugins/ToolbarPlugin'
 import TableActionMenuPlugin from './plugins/TableActionMenuPlugin'
 import ImagePlugin from './plugins/ImagePlugin'
+import PasteMarkdownPlugin from './plugins/PasteMarkdownPlugin'
 import { ImageNode, $createImageNode } from './nodes/ImageNode'
 import { ExtendedTextNode } from './nodes/ExtendedTextNode'
 import './HtmlEditor.css'
@@ -203,6 +204,7 @@ function onError(error: Error) {
 const HtmlEditor = forwardRef<HtmlEditorRef, HtmlEditorProps>(
   ({ value, onChange, placeholder = 'Enter description...', minHeight = '200px', onOpenImageBrowser, onOpenDiagram, onOpenDataModel }, ref) => {
     const [isFullscreen, setIsFullscreen] = useState(false)
+    const [showPasteMarkdown, setShowPasteMarkdown] = useState(false)
 
     const initialConfig = {
       namespace: 'HtmlEditor',
@@ -283,6 +285,7 @@ const HtmlEditor = forwardRef<HtmlEditorRef, HtmlEditorProps>(
               onOpenImageBrowser={onOpenImageBrowser}
               onOpenDiagram={onOpenDiagram}
               onOpenDataModel={onOpenDataModel}
+              onPasteMarkdown={() => setShowPasteMarkdown(true)}
             />
             <div className="editor-inner">
               <RichTextPlugin
@@ -297,6 +300,10 @@ const HtmlEditor = forwardRef<HtmlEditorRef, HtmlEditorProps>(
               <CodeHighlightingPlugin />
               <TableActionMenuPlugin />
               <ImagePlugin />
+              <PasteMarkdownPlugin
+                show={showPasteMarkdown}
+                onClose={() => setShowPasteMarkdown(false)}
+              />
               <LoadInitialContentPlugin value={value} />
               <HtmlChangePlugin onChange={onChange} />
               <ResetContentPlugin onResetRef={handleResetRef} />

@@ -444,3 +444,345 @@
 .dark .editor-placeholder {
   color: #9ca3af;
 }
+
+/* Paste Markdown Dialog */
+.paste-markdown-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.paste-markdown-dialog {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 700px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.paste-markdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.paste-markdown-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.paste-markdown-close {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 0.25rem;
+  line-height: 1;
+  border-radius: 0.25rem;
+}
+
+.paste-markdown-close:hover {
+  color: #111827;
+  background: #f3f4f6;
+}
+
+.paste-markdown-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.paste-markdown-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.375rem;
+}
+
+.paste-markdown-textarea {
+  width: 100%;
+  min-height: 160px;
+  max-height: 300px;
+  padding: 0.625rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  resize: vertical;
+  outline: none;
+  color: #111827;
+  background: #fafafa;
+  box-sizing: border-box;
+}
+
+.paste-markdown-textarea:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.paste-markdown-textarea::placeholder {
+  color: #9ca3af;
+}
+
+.paste-markdown-preview-section {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 0.75rem;
+}
+
+.paste-markdown-preview {
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 0.625rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: #111827;
+  background: white;
+}
+
+.paste-markdown-preview h1,
+.paste-markdown-preview h2,
+.paste-markdown-preview h3,
+.paste-markdown-preview h4 {
+  margin: 0.5rem 0 0.25rem;
+}
+
+.paste-markdown-preview h1 { font-size: 1.25rem; }
+.paste-markdown-preview h2 { font-size: 1.125rem; }
+.paste-markdown-preview h3 { font-size: 1rem; }
+
+.paste-markdown-preview p {
+  margin: 0.25rem 0;
+}
+
+.paste-markdown-preview ul,
+.paste-markdown-preview ol {
+  padding-left: 1.25rem;
+  margin: 0.25rem 0;
+}
+
+.paste-markdown-preview code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8125em;
+  background: #f3f4f6;
+  padding: 0.1rem 0.3rem;
+  border-radius: 0.25rem;
+}
+
+.paste-markdown-preview pre {
+  background: #f3f4f6;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  overflow-x: auto;
+  margin: 0.25rem 0;
+}
+
+.paste-markdown-preview pre code {
+  background: none;
+  padding: 0;
+}
+
+.paste-markdown-preview blockquote {
+  border-left: 3px solid #6366f1;
+  padding-left: 0.75rem;
+  margin: 0.25rem 0;
+  color: #6b7280;
+}
+
+.paste-markdown-preview a {
+  color: #6366f1;
+  text-decoration: underline;
+}
+
+.paste-markdown-preview table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.25rem 0;
+}
+
+.paste-markdown-preview th,
+.paste-markdown-preview td {
+  border: 1px solid #d1d5db;
+  padding: 0.375rem 0.5rem;
+  font-size: 0.8125rem;
+}
+
+.paste-markdown-preview th {
+  background: #f9fafb;
+  font-weight: 600;
+}
+
+.paste-markdown-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+  gap: 0.5rem;
+}
+
+.paste-markdown-hint {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  flex: 1;
+}
+
+.paste-markdown-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.paste-markdown-btn {
+  padding: 0.375rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  border: 1px solid #d1d5db;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.paste-markdown-btn-cancel {
+  background: white;
+  color: #374151;
+}
+
+.paste-markdown-btn-cancel:hover {
+  background: #f3f4f6;
+}
+
+.paste-markdown-btn-insert {
+  background: #6366f1;
+  color: white;
+  border-color: #6366f1;
+}
+
+.paste-markdown-btn-insert:hover {
+  background: #4f46e5;
+}
+
+.paste-markdown-btn-insert:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Dark mode for Paste Markdown dialog */
+.dark .paste-markdown-dialog {
+  background: #1f2937;
+}
+
+.dark .paste-markdown-header {
+  border-bottom-color: #374151;
+}
+
+.dark .paste-markdown-header h3 {
+  color: #f3f4f6;
+}
+
+.dark .paste-markdown-close {
+  color: #9ca3af;
+}
+
+.dark .paste-markdown-close:hover {
+  color: #f3f4f6;
+  background: #374151;
+}
+
+.dark .paste-markdown-label {
+  color: #9ca3af;
+}
+
+.dark .paste-markdown-textarea {
+  background: #111827;
+  border-color: #4b5563;
+  color: #e5e7eb;
+}
+
+.dark .paste-markdown-textarea:focus {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.2);
+}
+
+.dark .paste-markdown-preview-section {
+  border-top-color: #374151;
+}
+
+.dark .paste-markdown-preview {
+  background: #111827;
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+.dark .paste-markdown-preview code {
+  background: #374151;
+}
+
+.dark .paste-markdown-preview pre {
+  background: #374151;
+}
+
+.dark .paste-markdown-preview blockquote {
+  color: #9ca3af;
+}
+
+.dark .paste-markdown-preview a {
+  color: #818cf8;
+}
+
+.dark .paste-markdown-preview th,
+.dark .paste-markdown-preview td {
+  border-color: #4b5563;
+}
+
+.dark .paste-markdown-preview th {
+  background: #374151;
+}
+
+.dark .paste-markdown-footer {
+  background: #111827;
+  border-top-color: #374151;
+}
+
+.dark .paste-markdown-btn-cancel {
+  background: #374151;
+  color: #e5e7eb;
+  border-color: #4b5563;
+}
+
+.dark .paste-markdown-btn-cancel:hover {
+  background: #4b5563;
+}
+
+.dark .paste-markdown-btn-insert {
+  background: #818cf8;
+  border-color: #818cf8;
+}
+
+.dark .paste-markdown-btn-insert:hover {
+  background: #6366f1;
+}

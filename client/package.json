@@ -31,6 +31,7 @@
     "i18next": "^25.4.2",
     "js-cookie": "^3.0.5",
     "lexical": "^0.40.0",
+    "marked": "^17.0.3",
     "modatatool": "^0.2.1",
     "prismjs": "^1.30.0",
     "react": "^18.3.1",
@@ -41,6 +42,7 @@
   "devDependencies": {
     "@types/file-saver": "^2.0.7",
     "@types/js-cookie": "^3.0.6",
+    "@types/marked": "^5.0.2",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^7.13.1",

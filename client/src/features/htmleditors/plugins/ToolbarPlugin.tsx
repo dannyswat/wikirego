@@ -63,9 +63,10 @@ interface ToolbarPluginProps {
   onOpenImageBrowser?: () => void
   onOpenDiagram?: (imageUrl?: string) => void
   onOpenDataModel?: (imageUrl?: string) => void
+  onPasteMarkdown?: () => void
 }
 
-export default function ToolbarPlugin({ isFullscreen, onToggleFullscreen, onOpenImageBrowser, onOpenDiagram, onOpenDataModel }: ToolbarPluginProps) {
+export default function ToolbarPlugin({ isFullscreen, onToggleFullscreen, onOpenImageBrowser, onOpenDiagram, onOpenDataModel, onPasteMarkdown }: ToolbarPluginProps) {
   const [editor] = useLexicalComposerContext()
   const [isBold, setIsBold] = useState(false)
   const [isItalic, setIsItalic] = useState(false)
@@ -658,6 +659,19 @@ export default function ToolbarPlugin({ isFullscreen, onToggleFullscreen, onOpen
           </svg>
         </button>
       )}
+
+      {/* Paste Markdown */}
+      <button
+        type="button"
+        className="toolbar-button"
+        onClick={onPasteMarkdown}
+        title="Paste Markdown"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H4z" />
+          <path d="M5.15 6.77V5.08h1.18v1.69l.73-.73.49.49L6.32 7.76l1.24 1.22-.49.49-.73-.73v1.69H5.15V8.74l-.74.73-.49-.49 1.23-1.22-1.23-1.23.49-.49.74.73zm4.46 2.42H8.38V7.81h1.23V6.58h.76v1.23h1.24v1.38h-1.24v1.23h-.76V9.19z" />
+        </svg>
+      </button>
 
       <span className="toolbar-divider" />
 

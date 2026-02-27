@@ -30,7 +30,15 @@ export type SerializedImageNode = Spread<
 
 function convertImageElement(domNode: Node): null | DOMConversionOutput {
   if (domNode instanceof HTMLImageElement) {
-    const { src, alt: altText, width, height } = domNode
+    const src = domNode.getAttribute('src') || ''
+    if (!src) {
+      return null
+    }
+    const altText = domNode.getAttribute('alt') || ''
+    const widthAttr = domNode.getAttribute('width')
+    const heightAttr = domNode.getAttribute('height')
+    const width = widthAttr ? Number(widthAttr) : undefined
+    const height = heightAttr ? Number(heightAttr) : undefined
     const node = $createImageNode({ src, altText, width, height })
     return { node }
   }
