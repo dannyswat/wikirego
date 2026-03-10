@@ -297,20 +297,28 @@ export default function EditPage() {
       {isDiagramModalOpen && (
         <DiagramModal
           diagramUrl={diagramUrl ?? ""}
-          onClose={(imageUrl: string | undefined) => {
+          onClose={(imageUrl: string | undefined, shouldInsert?: boolean) => {
             setIsDiagramModalOpen(false);
             if (!imageUrl) return;
-            handleInsertImage(imageUrl);
+            if (!shouldInsert && diagramUrl) {
+              editorRef.current?.replaceImageSrc(diagramUrl, imageUrl + "?t=" + Date.now());
+            } else {
+              handleInsertImage(imageUrl);
+            }
           }}
         />
       )}
       {isDataModelModalOpen && (
         <DataModelModal
           dataModelUrl={dataModelUrl ?? ""}
-          onClose={(imageUrl: string | undefined) => {
+          onClose={(imageUrl: string | undefined, shouldInsert?: boolean) => {
             setIsDataModelModalOpen(false);
             if (!imageUrl) return;
-            handleInsertImage(imageUrl);
+            if (!shouldInsert && dataModelUrl) {
+              editorRef.current?.replaceImageSrc(dataModelUrl, imageUrl + "?t=" + Date.now());
+            } else {
+              handleInsertImage(imageUrl);
+            }
           }}
         />
       )}

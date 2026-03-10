@@ -3,6 +3,7 @@ import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext
 import {
   $getSelection,
   $isRangeSelection,
+  $isNodeSelection,
   FORMAT_TEXT_COMMAND,
   FORMAT_ELEMENT_COMMAND,
   SELECTION_CHANGE_COMMAND,
@@ -32,7 +33,7 @@ import { $isLinkNode, TOGGLE_LINK_COMMAND } from '@lexical/link'
 import { $findMatchingParent, mergeRegister } from '@lexical/utils'
 import { INSERT_TABLE_COMMAND } from '@lexical/table'
 import { $createCodeNode, $isCodeNode } from '@lexical/code'
-import { $createImageNode } from '../nodes/ImageNode'
+import { $createImageNode, $isImageNode } from '../nodes/ImageNode'
 import { $insertNodes } from 'lexical'
 import { uploadImage, validateImageFile, ImageUploadError } from '../imageUpload'
 
@@ -78,6 +79,7 @@ export default function ToolbarPlugin({ isFullscreen, onToggleFullscreen, onOpen
   const [fontColor, setFontColor] = useState<string>('#000000')
   const [codeLanguage, setCodeLanguage] = useState<string>('')
   const [elementFormat, setElementFormat] = useState<ElementFormatType>('')
+  const [selectedImageSrc, setSelectedImageSrc] = useState<string | undefined>(undefined)
   const [showTablePicker, setShowTablePicker] = useState(false)
   const [showColorPicker, setShowColorPicker] = useState(false)
   const [hoveredRows, setHoveredRows] = useState(0)
@@ -89,6 +91,13 @@ export default function ToolbarPlugin({ isFullscreen, onToggleFullscreen, onOpen
 
   const updateToolbar = useCallback(() => {
     const selection = $getSelection()
+    if ($isNodeSelection(selection)) {
+      const nodes = selection.getNodes()
+      const imageNode = nodes.find($isImageNode)
+      setSelectedImageSrc(imageNode ? imageNode.getSrc() : undefined)
+      return
+    }
+    setSelectedImageSrc(undefined)
     if ($isRangeSelection(selection)) {
       setIsBold(selection.hasFormat('bold'))
       setIsItalic(selection.hasFormat('italic'))
@@ -636,7 +645,7 @@ export default function ToolbarPlugin({ isFullscreen, onToggleFullscreen, onOpen
         <button
           type="button"
           className="toolbar-button"
-          onClick={() => onOpenDiagram()}
+          onClick={() => onOpenDiagram(selectedImageSrc)}
           title="Insert/Update Diagram"
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
@@ -651,7 +660,7 @@ export default function ToolbarPlugin({ isFullscreen, onToggleFullscreen, onOpen
         <button
           type="button"
           className="toolbar-button"
-          onClick={() => onOpenDataModel()}
+          onClick={() => onOpenDataModel(selectedImageSrc)}
           title="Insert/Update Data Model"
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">

@@ -15,7 +15,7 @@ import { LinkNode, AutoLinkNode } from '@lexical/link'
 import { TableNode, TableCellNode, TableRowNode } from '@lexical/table'
 import { CodeNode, CodeHighlightNode, registerCodeHighlighting } from '@lexical/code'
 import { $generateHtmlFromNodes, $generateNodesFromDOM } from '@lexical/html'
-import { $getRoot, $insertNodes, TextNode, type EditorState, type LexicalEditor } from 'lexical'
+import { $getRoot, $insertNodes, TextNode, $nodesOfType, type EditorState, type LexicalEditor } from 'lexical'
 import ToolbarPlugin from './plugins/ToolbarPlugin'
 import TableActionMenuPlugin from './plugins/TableActionMenuPlugin'
 import ImagePlugin from './plugins/ImagePlugin'
@@ -34,6 +34,7 @@ if (!(globalThis as { Prism?: typeof Prism }).Prism) {
 export interface HtmlEditorRef {
   resetContent: (html: string) => void
   insertImage: (src: string, altText?: string) => void
+  replaceImageSrc: (oldSrc: string, newSrc: string) => void
 }
 
 interface HtmlEditorProps {
@@ -260,6 +261,20 @@ const HtmlEditor = forwardRef<HtmlEditorRef, HtmlEditorProps>(
           editor.update(() => {
             const imageNode = $createImageNode({ src, altText: altText || '' })
             $insertNodes([imageNode])
+          })
+        }
+      },
+      replaceImageSrc: (oldSrc: string, newSrc: string) => {
+        const editor = editorInstanceRef.current
+        if (editor) {
+          editor.update(() => {
+            const nodes = $nodesOfType(ImageNode)
+            // Strip query strings for comparison
+            const oldBase = oldSrc.split('?')[0]
+            const match = nodes.find((n) => n.getSrc().split('?')[0] === oldBase)
+            if (match) {
+              match.getWritable().__src = newSrc
+            }
           })
         }
       },
