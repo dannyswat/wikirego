@@ -32,12 +32,12 @@
     "js-cookie": "^3.0.5",
     "lexical": "^0.40.0",
     "marked": "^17.0.3",
-    "modatatool": "^0.2.1",
+    "modatatool": "^0.2.3",
     "prismjs": "^1.30.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-i18next": "^15.7.3",
-    "react-router-dom": "^6.24.1"
+    "react-router-dom": "^6.30.3"
   },
   "devDependencies": {
     "@types/file-saver": "^2.0.7",
@@ -47,16 +47,16 @@
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^7.13.1",
     "@typescript-eslint/parser": "^7.13.1",
-    "@vitejs/plugin-react": "^4.3.1",
+    "@vitejs/plugin-react": "^4.7.0",
     "autoprefixer": "^10.4.20",
-    "eslint": "^8.57.0",
+    "eslint": "^8.57.1",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.7",
     "micromatch": "^4.0.8",
-    "postcss": "^8.4.41",
-    "tailwindcss": "^3.4.14",
+    "postcss": "^8.5.8",
+    "tailwindcss": "^3.4.19",
     "typescript": "^5.2.2",
-    "vite": "^5.4.10",
+    "vite": "^5.4.21",
     "vitest": "^3.2.4"
   }
 }
