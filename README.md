@@ -1,6 +1,6 @@
 # wiki rego
 
-[![Go Server CI](https://github.com/dannyswat/wikirego/actions/workflows/go.yml/badge.svg)](https://github.com/dannyswat/wikirego/actions/workflows/go.yml) [![React Client CI](https://github.com/dannyswat/wikirego/actions/workflows/react.yml/badge.svg)](https://github.com/dannyswat/wikirego/actions/workflows/react.yml) [![Docker Build](https://github.com/dannyswat/wikirego/actions/workflows/docker.yml/badge.svg)](https://github.com/dannyswat/wikirego/actions/workflows/docker.yml)
+[![Go Server CI](https://github.com/dannyswat/wikirego/actions/workflows/go.yml/badge.svg)](https://github.com/dannyswat/wikirego/actions/workflows/go.yml) [![React Client CI](https://github.com/dannyswat/wikirego/actions/workflows/react.yml/badge.svg)](https://github.com/dannyswat/wikirego/actions/workflows/react.yml) [![Docker Build](https://github.com/dannyswat/wikirego/actions/workflows/docker.yml/badge.svg)](https://github.com/dannyswat/wikirego/actions/workflows/docker.yml) [![Release](https://github.com/dannyswat/wikirego/actions/workflows/release.yml/badge.svg)](https://github.com/dannyswat/wikirego/actions/workflows/release.yml)
 
 A lightweight, file-based wiki application written in Go with a React front-end. It supports markdown editing, page revisions, user authentication, and inline Excalidraw diagrams.
 
@@ -21,6 +21,67 @@ A lightweight, file-based wiki application written in Go with a React front-end.
 - URL: [https://demo.wikigo.site/](https://demo.wikigo.site/)
 - Username: admin
 - Password: WikiGoAdmin123
+
+## Quick Start (Pre-built Binary)
+
+Download the latest ZIP for your platform from the [Releases page](https://github.com/dannyswat/wikirego/releases):
+
+| Platform | File |
+|---|---|
+| Linux x64 | `wikirego-linux-amd64.zip` |
+| Linux ARM64 | `wikirego-linux-arm64.zip` |
+| macOS x64 | `wikirego-darwin-amd64.zip` |
+| macOS Apple Silicon | `wikirego-darwin-arm64.zip` |
+| Windows x64 | `wikirego-windows-amd64.zip` |
+
+### Running on Linux / macOS
+
+```bash
+# Extract the archive
+unzip wikirego-linux-amd64.zip -d wikirego
+cd wikirego
+
+# Make the binary executable (Linux/macOS only)
+chmod +x wikirego
+
+# Start the server
+./wikirego
+```
+
+### Running on Windows
+
+```bat
+:: Extract the ZIP, then from the extracted folder:
+wikirego.exe
+```
+
+The application will be available at http://localhost:8080
+
+### Environment Variables
+
+| Variable | Default | Description |
+|---|---|---|
+| `PORT` | `8080` | Port the server listens on |
+| `SERVER_PORT` | — | Alternative port variable |
+| `HTTP_PLATFORM_PORT` | — | Port variable for Azure App Service |
+| `TLS_CERT` | — | Path to TLS certificate file (enables HTTPS) |
+| `TLS_KEY` | — | Path to TLS private key file (enables HTTPS) |
+
+#### Example: Run on a custom port
+
+```bash
+PORT=9090 ./wikirego
+```
+
+#### Example: Run with HTTPS
+
+```bash
+TLS_CERT=/path/to/cert.pem TLS_KEY=/path/to/key.pem PORT=443 ./wikirego
+```
+
+When both `TLS_CERT` and `TLS_KEY` are set, the server automatically serves HTTPS. If either is missing, the server falls back to plain HTTP.
+
+---
 
 ## Quick Start (Docker)
 
@@ -116,11 +177,21 @@ Run `build.bat` and then launch `build\wikirego.exe`.
 
 The application reads files from:
 
-- **Data**: `server/data` (mounted in Docker or local folder)
-- **Media**: `server/media` (for diagram JSON, SVG, and uploads)
-- **Conf**: `server/conf` (for configuration)
-- **Views**: `server/views` (HTML templates)
-- **Public**: `server/public` (static assets from React build)
+- **Data**: `data/` (wiki pages, users, and settings)
+- **Media**: `media/` (diagram JSON, SVG, and uploads)
+- **Conf**: `conf/` (FIDO2 and other configuration)
+- **Views**: `views/` (HTML templates)
+- **Public**: `public/` (static assets from React build)
+
+All paths are relative to the working directory where the binary is executed. When using Docker, these are mounted as volumes (see above).
+
+### HTTPS / TLS
+
+Set `TLS_CERT` and `TLS_KEY` to the paths of your certificate and private key files to enable HTTPS. When only one variable is set (or neither), the server starts in plain HTTP mode.
+
+```bash
+TLS_CERT=./cert.pem TLS_KEY=./key.pem PORT=443 ./wikirego
+```
 
 ---
 

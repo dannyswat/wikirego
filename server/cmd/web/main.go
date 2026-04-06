@@ -95,6 +95,14 @@ func main() {
 		port = "8080"
 	}
 
-	e.Logger.Printf("Server started at port %s", port)
-	e.Logger.Fatal(e.Start(":" + port))
+	tlsCert := os.Getenv("TLS_CERT")
+	tlsKey := os.Getenv("TLS_KEY")
+
+	if tlsCert != "" && tlsKey != "" {
+		e.Logger.Printf("Server started with TLS at port %s", port)
+		e.Logger.Fatal(e.StartTLS(":"+port, tlsCert, tlsKey))
+	} else {
+		e.Logger.Printf("Server started at port %s", port)
+		e.Logger.Fatal(e.Start(":" + port))
+	}
 }
