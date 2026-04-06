@@ -29,7 +29,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: client-dist
-          path: client/dist
+          path: build/public
 
   build-release:
     needs: build-client
@@ -68,7 +68,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: client-dist
-          path: client/dist
+          path: build/public
 
       - name: Build server binary
         env:
@@ -91,7 +91,7 @@ jobs:
                    package/media/dgsource \
                    package/conf
           mv build/wikirego${{ matrix.ext }} package/
-          cp -r client/dist/. package/public/
+          cp -r build/public/. package/public/
           cp server/views/*.html package/views/
           cp server/conf/fido2.json package/conf/
           cp release/web.config package/
