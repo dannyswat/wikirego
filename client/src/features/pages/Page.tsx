@@ -3,13 +3,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { getAllPages, getPageByUrl } from "./pageApi";
-import { useContext, useEffect, useMemo } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import TableOfContent from "./TableOfContent";
 import { UserContext } from "../auth/UserProvider";
 import { buildTree, findItemInTree } from "./pageTree";
-import { IconFidgetSpinner } from "@tabler/icons-react";
+import { IconCopy, IconFidgetSpinner } from "@tabler/icons-react";
 import PageList from "./PageList";
 import { SettingContext } from "../setup/SettingProvider";
+import { convertHtmlToMarkdown } from "../../common/htmlToMarkdown";
 
 export default function Page() {
   const { t } = useTranslation();
@@ -18,6 +19,8 @@ export default function Page() {
   const pageId = id ? window.location.pathname.substring(3) : "home";
   const { isLoggedIn } = useContext(UserContext);
   const { setting } = useContext(SettingContext);
+  const [toast, setToast] = useState<{ text: string; tone: "success" | "error" } | null>(null);
+  const toastTimerRef = useRef<number | null>(null);
   const { data, isLoading, isError } = useQuery({
     queryKey: ["page", pageId],
     queryFn: () => getPageByUrl(pageId),
@@ -35,6 +38,56 @@ export default function Page() {
     if (data?.title) document.title = data.title + " - " + siteName;
     else document.title = siteName;
   }, [data?.title, setting?.site_name]);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) {
+        window.clearTimeout(toastTimerRef.current);
+      }
+    };
+  }, []);
+
+  function showToast(text: string, tone: "success" | "error") {
+    setToast({ text, tone });
+
+    if (toastTimerRef.current) {
+      window.clearTimeout(toastTimerRef.current);
+    }
+
+    toastTimerRef.current = window.setTimeout(() => {
+      setToast(null);
+      toastTimerRef.current = null;
+    }, 2000);
+  }
+
+  async function copyPageAsMarkdown() {
+    const markdown = convertHtmlToMarkdown(data?.content || "");
+
+    if (!markdown) {
+      showToast(t("Copy failed"), "error");
+      return;
+    }
+
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(markdown);
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = markdown;
+        textarea.setAttribute("readonly", "true");
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      }
+
+      showToast(t("Copied"), "success");
+    } catch {
+      showToast(t("Copy failed"), "error");
+    }
+  }
 
   if (isLoading) return <div>{t("Loading")}</div>;
   if (isError) return <div>{t("Error loading page")}</div>;
@@ -55,6 +108,16 @@ export default function Page() {
               <p className="text-sm text-slate-500 dark:text-slate-400">{data.shortDesc}</p>
             )}
           </div>
+
+          <button
+            type="button"
+            onClick={copyPageAsMarkdown}
+            title={t("Copy page content as Markdown")}
+            aria-label={t("Copy page content as Markdown")}
+            className="inline-flex items-center rounded-lg border border-slate-200 bg-slate-50 p-2 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+          >
+            <IconCopy size={16} />
+          </button>
         </div>
 
         <div
@@ -82,6 +145,21 @@ export default function Page() {
 
       {data.content && (
         <TableOfContent title={data.title} content={data.content} />
+      )}
+
+      {toast && (
+        <div className="pointer-events-none fixed bottom-4 right-4 z-50">
+          <div
+            className={`rounded-lg px-4 py-2 text-sm font-medium text-white shadow-lg ${toast.tone === "success"
+              ? "bg-emerald-600"
+              : "bg-rose-600"
+              }`}
+            role="status"
+            aria-live="polite"
+          >
+            {toast.text}
+          </div>
+        </div>
       )}
     </div>
   );
