@@ -3,13 +3,13 @@ package wiki
 import (
 	"errors"
 	"log"
+	"net/url"
 	"os"
 	"path/filepath"
 
 	"wikirego/internal/app/handlers"
 	"wikirego/internal/app/middlewares"
 	"wikirego/internal/collab"
-	"wikirego/internal/common"
 	"wikirego/internal/common/apihelper"
 	"wikirego/internal/common/caching"
 	"wikirego/internal/filemanager"
@@ -140,9 +140,19 @@ func (s *WikiStartUp) Setup() error {
 		s.reactPage = pages.GetReactPageMeta(string(reactFile))
 	}
 
-	fido2Setting, err := common.GetJsonFile[setting.Fido2Setting](filepath.Join(s.ConfigPath, "fido2.json"))
-	if err != nil {
-		return err
+	// For WebAuthn RPID/ID use the authority (host[:port]) part of the SiteURL
+	parsedURL, perr := url.Parse(siteSetting.SiteURL)
+	fido2ID := siteSetting.SiteURL
+	fido2Host := siteSetting.SiteURL
+	if perr == nil && parsedURL.Host != "" {
+		fido2ID = parsedURL.Host
+		fido2Host = parsedURL.Scheme + "://" + parsedURL.Host
+	}
+
+	fido2Setting := &setting.Fido2Setting{
+		DisplayName: siteSetting.SiteName,
+		ID:          fido2ID,
+		Hosts:       []string{fido2Host},
 	}
 	s.fido2Setting = fido2Setting
 	s.loginRateLimiter = apihelper.NewRateLimiter(5, 1) // 5 requests per minute, refill 1 token per minute
