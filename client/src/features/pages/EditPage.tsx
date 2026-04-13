@@ -13,27 +13,31 @@ import DiagramModal from "../editors/DiagramModal";
 import DataModelModal from "../editors/DataModelModal";
 import ImageBrowserModal from "../editors/ImageBrowserModal";
 import { queryClient } from "../../common/query";
-import { useEffect, useState, useRef, MouseEvent, useMemo } from "react";
+import { useContext, useEffect, useState, useRef, MouseEvent, useMemo, useCallback } from "react";
 import { clearCache, PageDropDown } from "../editors/PageDropDown";
 import { IconFidgetSpinner } from "@tabler/icons-react";
 import ToggleButton from "../../components/ToggleButton";
 import MenuButton from "../layout/MenuButton";
 import { useAutoSaveStore } from "../editors/AutoSaveStore";
 import { useTranslation } from "react-i18next";
+import { UserContext } from "../auth/UserProvider";
+import {
+  applyPatchToPage,
+  buildCollabPage,
+  createHtmlPatch,
+  createScalarPatch,
+  createTextPatch,
+  PageCollabClient,
+} from "./pageCollab";
+import type { AppliedCollabPatch, CollabParticipant, CollabPatch, CollabStatus } from "./pageCollabTypes";
 
 export default function EditPage() {
   const { t } = useTranslation();
+  const { username } = useContext(UserContext);
   const { id } = useParams();
   const pageId = id ? window.location.pathname.substring(6) : "home";
   const { isAutoSaveEnabled } = useAutoSaveStore();
   const editorRef = useRef<HtmlEditorRef>(null);
-  const [isDiagramModalOpen, setIsDiagramModalOpen] = useState(false);
-  const [isDataModelModalOpen, setIsDataModelModalOpen] = useState(false);
-  const [isImageBrowserModalOpen, setIsImageBrowserModalOpen] = useState(false);
-  const [diagramUrl, setDiagramUrl] = useState<string>();
-  const [dataModelUrl, setDataModelUrl] = useState<string>();
-  const localStorageKey = `editPageData_${pageId}`;
-  const navigate = useNavigate();
   const [data, setData] = useState<PageRequest>(() => ({
     id: 0,
     parentId: null,
@@ -46,6 +50,23 @@ export default function EditPage() {
     isCategoryPage: false,
     sortChildrenDesc: false,
   }));
+  const collabClientRef = useRef<PageCollabClient | null>(null);
+  const currentVersionRef = useRef(0);
+  const currentClientIdRef = useRef("");
+  const sharedPageRef = useRef<PageRequest | null>(null);
+  const dataRef = useRef<PageRequest>(data);
+  const pendingPatchIdRef = useRef<string | null>(null);
+  const suppressEditorChangeRef = useRef(false);
+  const [isDiagramModalOpen, setIsDiagramModalOpen] = useState(false);
+  const [isDataModelModalOpen, setIsDataModelModalOpen] = useState(false);
+  const [isImageBrowserModalOpen, setIsImageBrowserModalOpen] = useState(false);
+  const [collabStatus, setCollabStatus] = useState<CollabStatus>("disconnected");
+  const [participants, setParticipants] = useState<CollabParticipant[]>([]);
+  const [diagramUrl, setDiagramUrl] = useState<string>();
+  const [dataModelUrl, setDataModelUrl] = useState<string>();
+  const localStorageKey = `editPageData_${pageId}`;
+  const navigate = useNavigate();
+  const presenceSummary = useMemo(() => summarizeParticipants(participants, username), [participants, username]);
 
   const autoSaveData = useMemo<PageRequest | undefined>(() => {
     const saved = isAutoSaveEnabled
@@ -105,17 +126,123 @@ export default function EditPage() {
   });
 
   useEffect(() => {
+    dataRef.current = data;
+  }, [data]);
+
+  const flushLocalChanges = useCallback(() => {
+    const client = collabClientRef.current;
+    const shared = sharedPageRef.current;
+    const local = dataRef.current;
+    if (!client || !shared || pendingPatchIdRef.current) return;
+
+    const nextPatch = buildNextPatch(shared, local, currentVersionRef.current);
+    if (!nextPatch) return;
+
+    pendingPatchIdRef.current = nextPatch.id;
+    if (!client.sendPatch(nextPatch)) {
+      pendingPatchIdRef.current = null;
+    }
+  }, []);
+
+  const replaceEditorContent = useCallback((content: string) => {
+    suppressEditorChangeRef.current = true;
+    editorRef.current?.resetContent(content);
+  }, []);
+
+  const applySnapshot = useCallback((page: PageRequest, version: number, nextParticipants: CollabParticipant[], clientId?: string) => {
+    currentVersionRef.current = version;
+    currentClientIdRef.current = clientId ?? currentClientIdRef.current;
+    sharedPageRef.current = page;
+    pendingPatchIdRef.current = null;
+    dataRef.current = page;
+    setParticipants(nextParticipants);
+    setData(page);
+    replaceEditorContent(page.content);
+  }, [replaceEditorContent]);
+
+  const handleAppliedPatch = useCallback((patch: AppliedCollabPatch) => {
+    const shared = sharedPageRef.current ?? dataRef.current;
+    let nextShared: PageRequest;
+    try {
+      nextShared = applyPatchToPage(shared, patch);
+    } catch {
+      return;
+    }
+
+    sharedPageRef.current = nextShared;
+    currentVersionRef.current = patch.version;
+
+    if (patch.clientId === currentClientIdRef.current) {
+      if (pendingPatchIdRef.current === patch.id) {
+        pendingPatchIdRef.current = null;
+      }
+      flushLocalChanges();
+      return;
+    }
+
+    try {
+      const nextLocal = applyPatchToPage(dataRef.current, patch);
+      dataRef.current = nextLocal;
+      setData(nextLocal);
+      if (patch.field === "content") {
+        replaceEditorContent(nextLocal.content);
+      }
+    } catch {
+      dataRef.current = nextShared;
+      setData(nextShared);
+      if (patch.field === "content") {
+        replaceEditorContent(nextShared.content);
+      }
+    }
+
+    flushLocalChanges();
+  }, [flushLocalChanges, replaceEditorContent]);
+
+  useEffect(() => {
     if (initialData && !autoSaveData) {
-      setData(initialData);
+      const page = buildCollabPage(initialData);
+      sharedPageRef.current = page;
+      dataRef.current = page;
+      setData(page);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialData]);
 
   useEffect(() => {
     if (autoSaveData) {
+      dataRef.current = autoSaveData;
       setData(autoSaveData);
     }
   }, [autoSaveData]);
+
+  useEffect(() => {
+    if (!initialData?.id) return;
+
+    const client = new PageCollabClient(initialData.id, {
+      onSnapshot: (snapshot) => {
+        applySnapshot(buildCollabPage(snapshot.page), snapshot.version, snapshot.participants ?? [], snapshot.clientId);
+      },
+      onPatch: handleAppliedPatch,
+      onPresence: (nextParticipants) => setParticipants(nextParticipants),
+      onError: (_message, snapshot) => {
+        if (snapshot) {
+          applySnapshot(buildCollabPage(snapshot.page), snapshot.version, snapshot.participants ?? [], snapshot.clientId);
+        }
+      },
+      onStatus: setCollabStatus,
+    });
+
+    collabClientRef.current = client;
+    client.connect();
+
+    return () => {
+      collabClientRef.current = null;
+      pendingPatchIdRef.current = null;
+      currentClientIdRef.current = "";
+      setParticipants([]);
+      client.disconnect();
+    };
+  }, [applySnapshot, handleAppliedPatch, initialData?.id]);
 
   useEffect(() => {
     if (!isAutoSaveEnabled) {
@@ -132,9 +259,31 @@ export default function EditPage() {
   if (isLoading) return <div>{t('Loading...')}</div>;
   if (isError) return <div>{t('Page not found')}</div>;
 
+  function updateLocalPage(nextPage: PageRequest) {
+    dataRef.current = nextPage;
+    setData(nextPage);
+    flushLocalChanges();
+  }
+
+  function updateTextField(field: "title" | "url" | "shortDesc", value: string) {
+    updateLocalPage({ ...dataRef.current, [field]: value });
+  }
+
+  function updateScalarField(field: "parentId" | "isProtected" | "isPinned" | "isCategoryPage" | "sortChildrenDesc", value: number | boolean | null) {
+    updateLocalPage({ ...dataRef.current, [field]: value } as PageRequest);
+  }
+
+  function handleContentChange(content: string) {
+    if (suppressEditorChangeRef.current) {
+      suppressEditorChangeRef.current = false;
+      return;
+    }
+    updateLocalPage({ ...dataRef.current, content });
+  }
+
   function handleSubmitClick(e: MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
-    updatePageApi.mutate(data);
+    updatePageApi.mutate(dataRef.current);
   }
 
   async function loadLastRevision() {
@@ -150,6 +299,27 @@ export default function EditPage() {
   return (
     <>
     <div className="w-full flex flex-col gap-4">
+      <section className="rounded-md border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-900 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-100">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <span className={`inline-block h-2.5 w-2.5 rounded-full ${collabStatus === "connected" ? "bg-emerald-500" : collabStatus === "connecting" ? "bg-amber-500" : collabStatus === "reconnecting" ? "bg-orange-500" : "bg-slate-400"}`} />
+            <span className="font-medium">Collaboration {collabStatus}</span>
+            <span>{presenceSummary.totalEditors} active editor{presenceSummary.totalEditors === 1 ? "" : "s"}</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {presenceSummary.entries.map((entry) => (
+              <span
+                key={entry.userId}
+                className={`rounded-full border px-3 py-1 text-xs font-medium ${entry.isSelf ? "border-emerald-300 bg-emerald-100 text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-100" : "border-sky-200 bg-white/80 text-sky-900 dark:border-sky-800 dark:bg-sky-950/50 dark:text-sky-100"}`}
+                title={entry.tabCount > 1 ? `${entry.tabCount} tabs` : "1 tab"}
+              >
+                {entry.label}
+                {entry.tabCount > 1 ? ` (${entry.tabCount} tabs)` : ""}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
       <section className="flex flex-row items-center">
         <label className="basis-1/4">{t('Title')}</label>
         <input
@@ -157,9 +327,7 @@ export default function EditPage() {
           type="text"
           placeholder={t('Title')}
           value={data.title}
-          onChange={(e) =>
-            setData((prev) => ({ ...prev, title: e.target.value }))
-          }
+          onChange={(e) => updateTextField("title", e.target.value)}
         />
       </section>
       <section className="flex flex-row items-center">
@@ -167,9 +335,7 @@ export default function EditPage() {
         <PageDropDown
           className="basis-3/4 border-2 border-gray-300 dark:border-gray-600 rounded-md p-2 w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
           value={data.parentId || undefined}
-          onChange={(value) =>
-            setData((prev) => ({ ...prev, parentId: value || null }))
-          }
+          onChange={(value) => updateScalarField("parentId", value || null)}
         />
       </section>
       <section className="flex flex-row items-center">
@@ -179,9 +345,7 @@ export default function EditPage() {
           type="text"
           placeholder={t('URL')}
           value={data.url}
-          onChange={(e) =>
-            setData((prev) => ({ ...prev, url: e.target.value }))
-          }
+          onChange={(e) => updateTextField("url", e.target.value)}
         />
       </section>
       <section className="flex flex-row items-center">
@@ -191,9 +355,7 @@ export default function EditPage() {
           type="text"
           placeholder={t('Short Description')}
           value={data.shortDesc}
-          onChange={(e) =>
-            setData((prev) => ({ ...prev, shortDesc: e.target.value }))
-          }
+          onChange={(e) => updateTextField("shortDesc", e.target.value)}
         />
       </section>
       <section className="flex flex-row items-center">
@@ -202,24 +364,20 @@ export default function EditPage() {
           label={t('Category Page')}
           checked={data.isCategoryPage}
           className="ms-4"
-          onChange={(value) =>
-            setData((prev) => ({ ...prev, isCategoryPage: value }))
-          }
+          onChange={(value) => updateScalarField("isCategoryPage", value)}
         />
         <ToggleButton
           label={t('Reverse Order')}
           checked={data.sortChildrenDesc}
           className="ms-4"
-          onChange={(value) =>
-            setData((prev) => ({ ...prev, sortChildrenDesc: value }))
-          }
+          onChange={(value) => updateScalarField("sortChildrenDesc", value)}
         />
       </section>
       <section>
         <HtmlEditor
           ref={editorRef}
           value={data.content}
-          onChange={(content) => setData((prev) => ({ ...prev, content }))}
+          onChange={handleContentChange}
           onOpenImageBrowser={() => setIsImageBrowserModalOpen(true)}
           onOpenDiagram={(imageUrl?: string) => {
             setDiagramUrl(imageUrl);
@@ -235,17 +393,13 @@ export default function EditPage() {
         <ToggleButton
           label={t('Protected')}
           checked={data.isProtected}
-          onChange={(value) =>
-            setData((prev) => ({ ...prev, isProtected: value }))
-          }
+          onChange={(value) => updateScalarField("isProtected", value)}
         />
         <ToggleButton
           label={t('Pinned')}
           checked={data.isPinned}
           className="ms-4"
-          onChange={(value) =>
-            setData((prev) => ({ ...prev, isPinned: value }))
-          }
+          onChange={(value) => updateScalarField("isPinned", value)}
         />
       </section>
       <section className="flex flex-row justify-items-end items-center">
@@ -335,7 +489,73 @@ export default function EditPage() {
   );
 }
 
+type PresenceEntry = {
+  userId: string;
+  label: string;
+  tabCount: number;
+  isSelf: boolean;
+};
+
+function summarizeParticipants(participants: CollabParticipant[], currentUsername?: string) {
+  const grouped = new Map<string, PresenceEntry>();
+  for (const participant of participants) {
+    const key = participant.userId || participant.clientId;
+    const existing = grouped.get(key);
+    if (existing) {
+      existing.tabCount += 1;
+      continue;
+    }
+    const isSelf = !!currentUsername && participant.userId === currentUsername;
+    grouped.set(key, {
+      userId: key,
+      label: isSelf ? `${participant.userId} (you)` : participant.userId,
+      tabCount: 1,
+      isSelf,
+    });
+  }
+  const entries = Array.from(grouped.values()).sort((left, right) => {
+    if (left.isSelf !== right.isSelf) return left.isSelf ? -1 : 1;
+    return left.label.localeCompare(right.label);
+  });
+  return {
+    entries,
+    totalEditors: entries.length,
+  };
+}
+
 interface AutoSavePageRequest {
   page: PageRequest;
   expire: number;
+}
+
+function buildNextPatch(shared: PageRequest, local: PageRequest, baseVersion: number): CollabPatch | null {
+  const titlePatch = createTextPatch("title", shared.title, local.title, baseVersion);
+  if (titlePatch) return titlePatch;
+
+  const urlPatch = createTextPatch("url", shared.url, local.url, baseVersion);
+  if (urlPatch) return urlPatch;
+
+  const shortDescPatch = createTextPatch("shortDesc", shared.shortDesc, local.shortDesc, baseVersion);
+  if (shortDescPatch) return shortDescPatch;
+
+  const contentPatch = createHtmlPatch(shared.content, local.content, baseVersion);
+  if (contentPatch) return contentPatch;
+
+  if (shared.parentId !== local.parentId) {
+    return createScalarPatch("parentId", local.parentId, baseVersion);
+  }
+  if (shared.isProtected !== local.isProtected) {
+    return createScalarPatch("isProtected", local.isProtected, baseVersion);
+  }
+  if (shared.isPinned !== local.isPinned) {
+    return createScalarPatch("isPinned", local.isPinned, baseVersion);
+  }
+  if (shared.isCategoryPage !== local.isCategoryPage) {
+    return createScalarPatch("isCategoryPage", local.isCategoryPage, baseVersion);
+  }
+  if (shared.sortChildrenDesc !== local.sortChildrenDesc) {
+    return createScalarPatch("sortChildrenDesc", local.sortChildrenDesc, baseVersion);
+  }
+
+  return null;
 }

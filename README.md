@@ -197,4 +197,4 @@ TLS_CERT=./cert.pem TLS_KEY=./key.pem PORT=443 ./wikirego
 
 ## License
 
-This project is released under the GNU General Public License v2.0 (GPL-2.0), in accordance with the CKEditor license terms. See [LICENSE](LICENSE) for details.
+This project is released under the GNU General Public License v3.0 (GPL-3.0-only). See [LICENSE](LICENSE) for details.

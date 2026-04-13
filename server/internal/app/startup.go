@@ -8,6 +8,7 @@ import (
 
 	"wikirego/internal/app/handlers"
 	"wikirego/internal/app/middlewares"
+	"wikirego/internal/collab"
 	"wikirego/internal/common"
 	"wikirego/internal/common/apihelper"
 	"wikirego/internal/common/caching"
@@ -41,6 +42,7 @@ type WikiStartUp struct {
 	htmlPolicy           *bluemonday.Policy
 	fileManager          filemanager.FileManager
 	pageHandler          *handlers.PageHandler
+	pageCollabHandler    *handlers.PageCollabHandler
 	authHandler          *handlers.AuthHandler
 	fido2Handler         *handlers.Fido2Handler
 	uploadHandler        *handlers.UploadHandler
@@ -55,6 +57,7 @@ type WikiStartUp struct {
 	fido2Setting         *setting.Fido2Setting
 	loginRateLimiter     *apihelper.RateLimiter
 	imageResizer         images.ImageResizer
+	collabHub            *collab.Hub
 }
 
 var (
@@ -117,6 +120,7 @@ func (s *WikiStartUp) Setup() error {
 		RevisionService: s.pageRevisionService,
 		SearchService:   s.searchService,
 	}
+	s.collabHub = collab.NewHub(s.pageService)
 
 	err = s.keyStore.Init()
 	if err != nil {
@@ -165,6 +169,7 @@ func (s *WikiStartUp) RegisterHandlers(e *echo.Echo) {
 		PageRevisionService: s.pageRevisionService,
 		ReactPage:           s.reactPage,
 	}
+	s.pageCollabHandler = handlers.NewPageCollabHandler(s.collabHub)
 	s.authHandler = &handlers.AuthHandler{
 		UserService: s.userService,
 		KeyStore:    s.keyStore,
@@ -222,6 +227,7 @@ func (s *WikiStartUp) RegisterHandlers(e *echo.Echo) {
 	editor.POST("/pages", s.pageHandler.CreatePage)
 	editor.PUT("/pages/:id", s.pageHandler.UpdatePage)
 	editor.DELETE("/pages/:id", s.pageHandler.DeletePage)
+	editor.GET("/collab/pages/:id/ws", s.pageCollabHandler.Collaborate)
 	editor.GET("/pagerevision/:id", s.pageHandler.GetLatestRevision)
 	editor.POST("/upload", s.uploadHandler.UploadFile)
 	editor.POST("/upload/image", s.uploadHandler.UploadImage)
