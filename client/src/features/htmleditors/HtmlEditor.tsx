@@ -120,7 +120,7 @@ function HtmlChangePlugin({ onChange }: { onChange: (html: string) => void }) {
     [editor, onChange]
   )
 
-  return <OnChangePlugin onChange={handleChange} />
+  return <OnChangePlugin onChange={handleChange} ignoreSelectionChange />
 }
 
 function CodeHighlightingPlugin() {

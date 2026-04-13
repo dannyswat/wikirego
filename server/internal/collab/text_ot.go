@@ -207,7 +207,11 @@ func applyHTMLPatch(current string, patch *Patch) (string, error) {
 		return "", fmt.Errorf("invalid block range")
 	}
 	for index, expected := range patch.BeforeBlocks {
-		if blocks[patch.BlockIndex+index] != expected {
+		normalizedExpected, err := normalizeHTMLFragment(expected)
+		if err != nil {
+			return "", ErrPatchConflict
+		}
+		if blocks[patch.BlockIndex+index] != normalizedExpected {
 			return "", ErrPatchConflict
 		}
 	}
@@ -223,7 +227,11 @@ func applyHTMLPatch(current string, patch *Patch) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		if updatedBlock != patch.AfterBlocks[0] {
+		normalizedAfter, err := normalizeHTMLFragment(patch.AfterBlocks[0])
+		if err != nil {
+			return "", ErrPatchConflict
+		}
+		if updatedBlock != normalizedAfter {
 			return "", ErrPatchConflict
 		}
 	}

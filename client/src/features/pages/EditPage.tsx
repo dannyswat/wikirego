@@ -27,6 +27,7 @@ import {
   createHtmlPatch,
   createScalarPatch,
   createTextPatch,
+  normalizeHtmlFragment,
   PageCollabClient,
 } from "./pageCollab";
 import type { AppliedCollabPatch, CollabParticipant, CollabPatch, CollabStatus } from "./pageCollabTypes";
@@ -56,7 +57,9 @@ export default function EditPage() {
   const sharedPageRef = useRef<PageRequest | null>(null);
   const dataRef = useRef<PageRequest>(data);
   const pendingPatchIdRef = useRef<string | null>(null);
-  const suppressEditorChangeRef = useRef(false);
+  const suppressedEditorContentRef = useRef<string | null>(null);
+  const flushTimerRef = useRef<number>(0);
+  const lastEditorHtmlRef = useRef<string>("");
   const [isDiagramModalOpen, setIsDiagramModalOpen] = useState(false);
   const [isDataModelModalOpen, setIsDataModelModalOpen] = useState(false);
   const [isImageBrowserModalOpen, setIsImageBrowserModalOpen] = useState(false);
@@ -145,7 +148,9 @@ export default function EditPage() {
   }, []);
 
   const replaceEditorContent = useCallback((content: string) => {
-    suppressEditorChangeRef.current = true;
+    if (lastEditorHtmlRef.current === content) return;
+    lastEditorHtmlRef.current = content;
+    suppressedEditorContentRef.current = normalizeHtmlFragment(content);
     editorRef.current?.resetContent(content);
   }, []);
 
@@ -172,7 +177,11 @@ export default function EditPage() {
     sharedPageRef.current = nextShared;
     currentVersionRef.current = patch.version;
 
-    if (patch.clientId === currentClientIdRef.current) {
+    const isOwnPatch =
+      patch.clientId === currentClientIdRef.current ||
+      pendingPatchIdRef.current === patch.id;
+
+    if (isOwnPatch) {
       if (pendingPatchIdRef.current === patch.id) {
         pendingPatchIdRef.current = null;
       }
@@ -203,6 +212,7 @@ export default function EditPage() {
       const page = buildCollabPage(initialData);
       sharedPageRef.current = page;
       dataRef.current = page;
+      lastEditorHtmlRef.current = page.content;
       setData(page);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -211,6 +221,7 @@ export default function EditPage() {
   useEffect(() => {
     if (autoSaveData) {
       dataRef.current = autoSaveData;
+      lastEditorHtmlRef.current = autoSaveData.content;
       setData(autoSaveData);
     }
   }, [autoSaveData]);
@@ -236,6 +247,7 @@ export default function EditPage() {
     client.connect();
 
     return () => {
+      window.clearTimeout(flushTimerRef.current);
       collabClientRef.current = null;
       pendingPatchIdRef.current = null;
       currentClientIdRef.current = "";
@@ -262,7 +274,8 @@ export default function EditPage() {
   function updateLocalPage(nextPage: PageRequest) {
     dataRef.current = nextPage;
     setData(nextPage);
-    flushLocalChanges();
+    window.clearTimeout(flushTimerRef.current);
+    flushTimerRef.current = window.setTimeout(flushLocalChanges, 300);
   }
 
   function updateTextField(field: "title" | "url" | "shortDesc", value: string) {
@@ -274,10 +287,15 @@ export default function EditPage() {
   }
 
   function handleContentChange(content: string) {
-    if (suppressEditorChangeRef.current) {
-      suppressEditorChangeRef.current = false;
-      return;
+    if (suppressedEditorContentRef.current !== null) {
+      const normalizedContent = normalizeHtmlFragment(content);
+      if (suppressedEditorContentRef.current === normalizedContent) {
+        suppressedEditorContentRef.current = null;
+        return;
+      }
+      suppressedEditorContentRef.current = null;
     }
+    if (content === dataRef.current.content) return;
     updateLocalPage({ ...dataRef.current, content });
   }
 

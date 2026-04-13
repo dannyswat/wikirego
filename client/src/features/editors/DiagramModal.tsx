@@ -10,6 +10,7 @@ import { useState } from "react";
 import { uploadDiagram } from "./uploadApi";
 import { NonDeletedExcalidrawElement } from "@excalidraw/excalidraw/element/types";
 import { createPortal } from "react-dom";
+import { useTheme } from "../../contexts/ThemeProvider";
 
 interface Diagram {
   elements: NonDeletedExcalidrawElement[];
@@ -26,6 +27,7 @@ export default function DiagramModal({
   diagramUrl,
   onClose,
 }: DiagramModalProps) {
+  const { theme } = useTheme();
   const [drawApi, setDrawApi] = useState<ExcalidrawImperativeAPI | null>(null);
   const [id, setId] = useState(() =>
     diagramUrl ? getIdFromDiagramUrl(diagramUrl) : undefined
@@ -85,7 +87,7 @@ export default function DiagramModal({
         appState: drawApi.getAppState(),
         files: drawApi.getFiles(),
         exportPadding: 10,
-        exportBackground: true, // Set to true if you want the canvas background color
+        exportBackground: false,
       };
       const png = await exportToBlob(exportSetting);
       const pngBase64 = await getBase64DataUrlFromBlob(png);
@@ -104,7 +106,7 @@ export default function DiagramModal({
         png: pngBase64
       });
       setId(result.id);
-      onClose(result.diagramPngUrl, saveAsNew);
+      onClose(result.diagramSvgUrl, saveAsNew);
     } catch (error) {
       console.error("Error exporting to SVG:", error);
     }
@@ -125,12 +127,13 @@ export default function DiagramModal({
           <Excalidraw
             initialData={{
               elements: data?.elements,
+              appState: data?.appState ? { ...data.appState, collaborators: new Map() } : undefined,
               files: data?.files,
               libraryItems: diagramResults,
             }}
+            theme={theme}
             excalidrawAPI={(api) => {
               setDrawApi(api);
-              api.resetScene();
             }}
           />
         </div>

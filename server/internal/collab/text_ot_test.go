@@ -96,3 +96,24 @@ func TestTransformHTMLPatchRebasesSameBlockText(t *testing.T) {
 		t.Fatalf("unexpected transformed after block: %q", transformed.AfterBlocks[0])
 	}
 }
+
+// Client (JavaScript) serializes void elements as <br> and <img>, but Go's html.Render
+// outputs <br/> and <img .../>. Patches from the client use browser-serialized blocks,
+// while the server normalizes to Go's form. This test verifies applyHTMLPatch tolerates
+// the difference so inserting images or editing empty paragraphs doesn't cause conflicts.
+func TestApplyHTMLPatch_ToleratesVoidElementSerializationDifference(t *testing.T) {
+	// Server has <p><br/></p> (Go-normalized), client sends <br> form in beforeBlocks.
+	updated, err := applyHTMLPatch("<p><br/></p>", &Patch{
+		Kind:         PatchKindHTML,
+		Field:        FieldContent,
+		BlockIndex:   0,
+		BeforeBlocks: []string{"<p><br></p>"},
+		AfterBlocks:  []string{"<img src=\"/media/diagrams/test.svg\" alt=\"\" style=\"max-width: 100%;\">", "<p><br></p>"},
+	})
+	if err != nil {
+		t.Fatalf("applyHTMLPatch returned error: %v", err)
+	}
+	if updated == "" {
+		t.Fatal("expected non-empty result")
+	}
+}
