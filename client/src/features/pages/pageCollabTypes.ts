@@ -61,14 +61,30 @@ export type AppliedCollabPatch = CollabPatch & {
 };
 
 export interface CollabClientEnvelope {
-  type: "patch" | "pong";
+  type: "patch" | "pong" | "cursor";
   patch?: CollabPatch;
+  cursor?: CollabCursorPosition;
 }
 
 export interface CollabServerEnvelope {
-  type: "snapshot" | "patch" | "presence" | "error";
+  type: "snapshot" | "patch" | "presence" | "error" | "cursor";
   snapshot?: CollabSnapshot;
   patch?: AppliedCollabPatch;
   participants?: CollabParticipant[];
   message?: string;
+  cursor?: CollabRemoteCursor;
+}
+
+export interface CollabCursorPosition {
+  /** "title", "url", "shortDesc", or "content" */
+  field: string;
+  /** Character offset for plain-text fields */
+  position?: number;
+  /** Top-level block index for the content field */
+  blockIndex?: number;
+}
+
+export interface CollabRemoteCursor extends CollabCursorPosition {
+  clientId: string;
+  userId: string;
 }

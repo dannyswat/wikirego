@@ -275,3 +275,21 @@ func (s *Session) broadcast(envelope *ServerEnvelope) {
 func (s *Session) BroadcastPatch(applied *AppliedPatch) {
 	s.broadcast(&ServerEnvelope{Type: MessageTypePatch, Patch: applied})
 }
+
+func (s *Session) BroadcastCursorExcept(senderClientID string, cursor *CursorPosition) {
+	message, err := json.Marshal(&ServerEnvelope{Type: MessageTypeCursor, Cursor: cursor})
+	if err != nil {
+		return
+	}
+	s.mu.Lock()
+	clients := make([]*Connection, 0, len(s.clients))
+	for id, client := range s.clients {
+		if id != senderClientID {
+			clients = append(clients, client)
+		}
+	}
+	s.mu.Unlock()
+	for _, client := range clients {
+		client.Enqueue(message)
+	}
+}

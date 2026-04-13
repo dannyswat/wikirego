@@ -13,14 +13,13 @@ import DiagramModal from "../editors/DiagramModal";
 import DataModelModal from "../editors/DataModelModal";
 import ImageBrowserModal from "../editors/ImageBrowserModal";
 import { queryClient } from "../../common/query";
-import { useContext, useEffect, useState, useRef, MouseEvent, useMemo, useCallback } from "react";
+import { useEffect, useState, useRef, MouseEvent, useMemo, useCallback } from "react";
 import { clearCache, PageDropDown } from "../editors/PageDropDown";
 import { IconFidgetSpinner } from "@tabler/icons-react";
 import ToggleButton from "../../components/ToggleButton";
 import MenuButton from "../layout/MenuButton";
 import { useAutoSaveStore } from "../editors/AutoSaveStore";
 import { useTranslation } from "react-i18next";
-import { UserContext } from "../auth/UserProvider";
 import {
   applyPatchToPage,
   buildCollabPage,
@@ -29,12 +28,13 @@ import {
   createTextPatch,
   normalizeHtmlFragment,
   PageCollabClient,
+  transformRemoteHtmlPatch,
+  transformRemoteTextPatch,
 } from "./pageCollab";
-import type { AppliedCollabPatch, CollabParticipant, CollabPatch, CollabStatus } from "./pageCollabTypes";
+import type { AppliedCollabPatch, CollabCursorPosition, CollabParticipant, CollabPatch, CollabRemoteCursor, CollabStatus, HtmlCollabPatch, TextCollabPatch } from "./pageCollabTypes";
 
 export default function EditPage() {
   const { t } = useTranslation();
-  const { username } = useContext(UserContext);
   const { id } = useParams();
   const pageId = id ? window.location.pathname.substring(6) : "home";
   const { isAutoSaveEnabled } = useAutoSaveStore();
@@ -57,19 +57,69 @@ export default function EditPage() {
   const sharedPageRef = useRef<PageRequest | null>(null);
   const dataRef = useRef<PageRequest>(data);
   const pendingPatchIdRef = useRef<string | null>(null);
-  const suppressedEditorContentRef = useRef<string | null>(null);
   const flushTimerRef = useRef<number>(0);
+  const pendingPatchObjectRef = useRef<CollabPatch | null>(null);
+  const needsResyncRef = useRef(false);
+  const cursorThrottleRef = useRef<number>(0);
   const lastEditorHtmlRef = useRef<string>("");
   const [isDiagramModalOpen, setIsDiagramModalOpen] = useState(false);
   const [isDataModelModalOpen, setIsDataModelModalOpen] = useState(false);
   const [isImageBrowserModalOpen, setIsImageBrowserModalOpen] = useState(false);
   const [collabStatus, setCollabStatus] = useState<CollabStatus>("disconnected");
   const [participants, setParticipants] = useState<CollabParticipant[]>([]);
+  const [currentClientId, setCurrentClientId] = useState("");
+  const [remoteCursors, setRemoteCursors] = useState<CollabRemoteCursor[]>([]);
   const [diagramUrl, setDiagramUrl] = useState<string>();
   const [dataModelUrl, setDataModelUrl] = useState<string>();
   const localStorageKey = `editPageData_${pageId}`;
   const navigate = useNavigate();
-  const presenceSummary = useMemo(() => summarizeParticipants(participants, username), [participants, username]);
+  const presenceSummary = useMemo(() => summarizeParticipants(participants, currentClientId), [participants, currentClientId]);
+
+  const participantLookup = useMemo(() => {
+    const map = new Map<string, { label: string; cssColor: string }>();
+    for (const entry of presenceSummary.entries) {
+      map.set(entry.clientId, { label: entry.label, cssColor: entry.cssColor });
+    }
+    return map;
+  }, [presenceSummary]);
+
+  const editorRemoteCursors = useMemo(() =>
+    remoteCursors
+      .filter((c) => c.field === "content" && c.clientId !== currentClientId && c.blockIndex != null)
+      .map((c) => ({
+        clientId: c.clientId,
+        label: participantLookup.get(c.clientId)?.label ?? c.userId,
+        color: participantLookup.get(c.clientId)?.cssColor ?? "#6366f1",
+        blockIndex: c.blockIndex!,
+      })),
+  [remoteCursors, currentClientId, participantLookup]);
+
+  const sendCursorUpdate = useCallback((field: string, position?: number, blockIndex?: number) => {
+    window.clearTimeout(cursorThrottleRef.current);
+    cursorThrottleRef.current = window.setTimeout(() => {
+      const cursor: CollabCursorPosition = { field, position, blockIndex };
+      collabClientRef.current?.sendCursor(cursor);
+    }, 80);
+  }, []);
+
+  function fieldCursorBadges(field: string) {
+    return remoteCursors
+      .filter((c) => c.field === field && c.clientId !== currentClientId)
+      .map((c) => {
+        const info = participantLookup.get(c.clientId);
+        if (!info) return null;
+        return (
+          <span
+            key={c.clientId}
+            className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs"
+            style={{ borderColor: info.cssColor, color: info.cssColor, background: info.cssColor + "18" }}
+          >
+            {info.label}
+          </span>
+        );
+      })
+      .filter(Boolean);
+  }
 
   const autoSaveData = useMemo<PageRequest | undefined>(() => {
     const saved = isAutoSaveEnabled
@@ -142,23 +192,35 @@ export default function EditPage() {
     if (!nextPatch) return;
 
     pendingPatchIdRef.current = nextPatch.id;
+    pendingPatchObjectRef.current = nextPatch;
     if (!client.sendPatch(nextPatch)) {
       pendingPatchIdRef.current = null;
+      pendingPatchObjectRef.current = null;
     }
   }, []);
 
   const replaceEditorContent = useCallback((content: string) => {
-    if (lastEditorHtmlRef.current === content) return;
+    const normalizedIncoming = normalizeHtmlFragment(content);
+    if (normalizeHtmlFragment(lastEditorHtmlRef.current) === normalizedIncoming) return;
     lastEditorHtmlRef.current = content;
-    suppressedEditorContentRef.current = normalizeHtmlFragment(content);
     editorRef.current?.resetContent(content);
+  }, []);
+
+  const updateEditorContent = useCallback((content: string) => {
+    const normalizedIncoming = normalizeHtmlFragment(content);
+    if (normalizeHtmlFragment(lastEditorHtmlRef.current) === normalizedIncoming) return;
+    lastEditorHtmlRef.current = content;
+    editorRef.current?.updateHtml(content);
   }, []);
 
   const applySnapshot = useCallback((page: PageRequest, version: number, nextParticipants: CollabParticipant[], clientId?: string) => {
     currentVersionRef.current = version;
     currentClientIdRef.current = clientId ?? currentClientIdRef.current;
+    if (clientId) setCurrentClientId(clientId);
     sharedPageRef.current = page;
     pendingPatchIdRef.current = null;
+    pendingPatchObjectRef.current = null;
+    needsResyncRef.current = false;
     dataRef.current = page;
     setParticipants(nextParticipants);
     setData(page);
@@ -184,28 +246,73 @@ export default function EditPage() {
     if (isOwnPatch) {
       if (pendingPatchIdRef.current === patch.id) {
         pendingPatchIdRef.current = null;
+        pendingPatchObjectRef.current = null;
+        if (needsResyncRef.current) {
+          // A prior conflict was deferred — reconnect now to get a clean snapshot.
+          needsResyncRef.current = false;
+          const client = collabClientRef.current;
+          if (client) {
+            client.disconnect();
+            window.setTimeout(() => client.connect(), 100);
+          }
+          return;
+        }
       }
       flushLocalChanges();
       return;
     }
 
+    // Transform the incoming remote patch so it applies correctly on top of
+    // our locally-applied pending patch (client-side OT).
+    let patchForLocal: AppliedCollabPatch = patch;
+    const pending = pendingPatchObjectRef.current;
+    if (pending) {
+      if (patch.kind === "text" && pending.kind === "text") {
+        const transformed = transformRemoteTextPatch(
+          patch as unknown as TextCollabPatch,
+          pending as TextCollabPatch
+        );
+        if (transformed === null) {
+          // Irrecoverable overlap — resync after our pending patch is acknowledged.
+          needsResyncRef.current = true;
+          return;
+        }
+        patchForLocal = { ...patch, ...transformed } as AppliedCollabPatch;
+      } else if (patch.kind === "html" && pending.kind === "html") {
+        const transformed = transformRemoteHtmlPatch(
+          patch as unknown as HtmlCollabPatch,
+          pending as HtmlCollabPatch
+        );
+        if (transformed === null) {
+          needsResyncRef.current = true;
+          return;
+        }
+        patchForLocal = { ...patch, ...transformed } as AppliedCollabPatch;
+      }
+    }
+
     try {
-      const nextLocal = applyPatchToPage(dataRef.current, patch);
+      const nextLocal = applyPatchToPage(dataRef.current, patchForLocal);
       dataRef.current = nextLocal;
       setData(nextLocal);
       if (patch.field === "content") {
-        replaceEditorContent(nextLocal.content);
+        updateEditorContent(nextLocal.content);
       }
     } catch {
-      dataRef.current = nextShared;
-      setData(nextShared);
-      if (patch.field === "content") {
-        replaceEditorContent(nextShared.content);
+      if (pendingPatchObjectRef.current) {
+        // Can't safely merge while we have unacknowledged changes — defer resync.
+        needsResyncRef.current = true;
+      } else {
+        dataRef.current = nextShared;
+        setData(nextShared);
+        if (patch.field === "content") {
+          updateEditorContent(nextShared.content);
+        }
       }
     }
 
     flushLocalChanges();
-  }, [flushLocalChanges, replaceEditorContent]);
+  }, [flushLocalChanges, replaceEditorContent, updateEditorContent]);
 
   useEffect(() => {
     if (initialData && !autoSaveData) {
@@ -234,7 +341,17 @@ export default function EditPage() {
         applySnapshot(buildCollabPage(snapshot.page), snapshot.version, snapshot.participants ?? [], snapshot.clientId);
       },
       onPatch: handleAppliedPatch,
-      onPresence: (nextParticipants) => setParticipants(nextParticipants),
+      onPresence: (nextParticipants) => {
+        setParticipants(nextParticipants);
+        const activeIds = new Set(nextParticipants.map((p) => p.clientId));
+        setRemoteCursors((prev) => prev.filter((c) => activeIds.has(c.clientId)));
+      },
+      onCursor: (cursor) => {
+        setRemoteCursors((prev) => [
+          ...prev.filter((c) => c.clientId !== cursor.clientId),
+          cursor,
+        ]);
+      },
       onError: (_message, snapshot) => {
         if (snapshot) {
           applySnapshot(buildCollabPage(snapshot.page), snapshot.version, snapshot.participants ?? [], snapshot.clientId);
@@ -248,10 +365,15 @@ export default function EditPage() {
 
     return () => {
       window.clearTimeout(flushTimerRef.current);
+      window.clearTimeout(cursorThrottleRef.current);
       collabClientRef.current = null;
       pendingPatchIdRef.current = null;
+      pendingPatchObjectRef.current = null;
+      needsResyncRef.current = false;
       currentClientIdRef.current = "";
+      setCurrentClientId("");
       setParticipants([]);
+      setRemoteCursors([]);
       client.disconnect();
     };
   }, [applySnapshot, handleAppliedPatch, initialData?.id]);
@@ -267,6 +389,18 @@ export default function EditPage() {
     };
     localStorage.setItem(localStorageKey, JSON.stringify(saveData));
   }, [data, localStorageKey, isAutoSaveEnabled]);
+
+  const handleContentChange = useCallback((content: string) => {
+    // Track the latest HTML seen from the editor so the guard in
+    // replaceEditorContent can detect real changes on the next remote patch.
+    lastEditorHtmlRef.current = content;
+    if (content === dataRef.current.content) return;
+    const nextPage = { ...dataRef.current, content };
+    dataRef.current = nextPage;
+    setData(nextPage);
+    window.clearTimeout(flushTimerRef.current);
+    flushTimerRef.current = window.setTimeout(flushLocalChanges, 300);
+  }, [flushLocalChanges]);
 
   if (isLoading) return <div>{t('Loading...')}</div>;
   if (isError) return <div>{t('Page not found')}</div>;
@@ -284,19 +418,6 @@ export default function EditPage() {
 
   function updateScalarField(field: "parentId" | "isProtected" | "isPinned" | "isCategoryPage" | "sortChildrenDesc", value: number | boolean | null) {
     updateLocalPage({ ...dataRef.current, [field]: value } as PageRequest);
-  }
-
-  function handleContentChange(content: string) {
-    if (suppressedEditorContentRef.current !== null) {
-      const normalizedContent = normalizeHtmlFragment(content);
-      if (suppressedEditorContentRef.current === normalizedContent) {
-        suppressedEditorContentRef.current = null;
-        return;
-      }
-      suppressedEditorContentRef.current = null;
-    }
-    if (content === dataRef.current.content) return;
-    updateLocalPage({ ...dataRef.current, content });
   }
 
   function handleSubmitClick(e: MouseEvent<HTMLButtonElement>) {
@@ -327,12 +448,12 @@ export default function EditPage() {
           <div className="flex flex-wrap gap-2">
             {presenceSummary.entries.map((entry) => (
               <span
-                key={entry.userId}
-                className={`rounded-full border px-3 py-1 text-xs font-medium ${entry.isSelf ? "border-emerald-300 bg-emerald-100 text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-100" : "border-sky-200 bg-white/80 text-sky-900 dark:border-sky-800 dark:bg-sky-950/50 dark:text-sky-100"}`}
-                title={entry.tabCount > 1 ? `${entry.tabCount} tabs` : "1 tab"}
+                key={entry.clientId}
+                className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium ${entry.colorClass}`}
+                title={entry.isSelf ? "You" : entry.userId}
               >
-                {entry.label}
-                {entry.tabCount > 1 ? ` (${entry.tabCount} tabs)` : ""}
+                <span className="font-bold">{entry.initial}</span>
+                <span>{entry.label}</span>
               </span>
             ))}
           </div>
@@ -340,13 +461,19 @@ export default function EditPage() {
       </section>
       <section className="flex flex-row items-center">
         <label className="basis-1/4">{t('Title')}</label>
-        <input
-          className="basis-3/4 border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md p-2"
-          type="text"
-          placeholder={t('Title')}
-          value={data.title}
-          onChange={(e) => updateTextField("title", e.target.value)}
-        />
+        <div className="basis-3/4 flex flex-col gap-1">
+          <input
+            className="border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md p-2"
+            type="text"
+            placeholder={t('Title')}
+            value={data.title}
+            onChange={(e) => updateTextField("title", e.target.value)}
+            onSelect={(e) => sendCursorUpdate("title", (e.target as HTMLInputElement).selectionStart ?? 0)}
+          />
+          {fieldCursorBadges("title").length > 0 && (
+            <div className="flex gap-1">{fieldCursorBadges("title")}</div>
+          )}
+        </div>
       </section>
       <section className="flex flex-row items-center">
         <label className="basis-1/4">{t('Parent Page')}</label>
@@ -358,23 +485,35 @@ export default function EditPage() {
       </section>
       <section className="flex flex-row items-center">
         <label className="basis-1/4">{t('URL')}</label>
-        <input
-          className="basis-3/4 border-2 border-gray-300 dark:border-gray-600 rounded-md p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-          type="text"
-          placeholder={t('URL')}
-          value={data.url}
-          onChange={(e) => updateTextField("url", e.target.value)}
-        />
+        <div className="basis-3/4 flex flex-col gap-1">
+          <input
+            className="border-2 border-gray-300 dark:border-gray-600 rounded-md p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            type="text"
+            placeholder={t('URL')}
+            value={data.url}
+            onChange={(e) => updateTextField("url", e.target.value)}
+            onSelect={(e) => sendCursorUpdate("url", (e.target as HTMLInputElement).selectionStart ?? 0)}
+          />
+          {fieldCursorBadges("url").length > 0 && (
+            <div className="flex gap-1">{fieldCursorBadges("url")}</div>
+          )}
+        </div>
       </section>
       <section className="flex flex-row items-center">
         <label className="basis-1/4">{t('Short Description')}</label>
-        <input
-          className="basis-3/4 border-2 border-gray-300 dark:border-gray-600 rounded-md p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-          type="text"
-          placeholder={t('Short Description')}
-          value={data.shortDesc}
-          onChange={(e) => updateTextField("shortDesc", e.target.value)}
-        />
+        <div className="basis-3/4 flex flex-col gap-1">
+          <input
+            className="border-2 border-gray-300 dark:border-gray-600 rounded-md p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            type="text"
+            placeholder={t('Short Description')}
+            value={data.shortDesc}
+            onChange={(e) => updateTextField("shortDesc", e.target.value)}
+            onSelect={(e) => sendCursorUpdate("shortDesc", (e.target as HTMLInputElement).selectionStart ?? 0)}
+          />
+          {fieldCursorBadges("shortDesc").length > 0 && (
+            <div className="flex gap-1">{fieldCursorBadges("shortDesc")}</div>
+          )}
+        </div>
       </section>
       <section className="flex flex-row items-center">
         <label className="basis-1/4">{t('Category')}</label>
@@ -396,6 +535,8 @@ export default function EditPage() {
           ref={editorRef}
           value={data.content}
           onChange={handleContentChange}
+          remoteCursors={editorRemoteCursors}
+          onCursorBlockChange={(blockIndex) => sendCursorUpdate("content", undefined, blockIndex ?? undefined)}
           onOpenImageBrowser={() => setIsImageBrowserModalOpen(true)}
           onOpenDiagram={(imageUrl?: string) => {
             setDiagramUrl(imageUrl);
@@ -508,32 +649,68 @@ export default function EditPage() {
 }
 
 type PresenceEntry = {
+  clientId: string;
   userId: string;
   label: string;
-  tabCount: number;
+  initial: string;
   isSelf: boolean;
+  colorClass: string;
+  cssColor: string;
 };
 
-function summarizeParticipants(participants: CollabParticipant[], currentUsername?: string) {
-  const grouped = new Map<string, PresenceEntry>();
+const PARTICIPANT_COLOR_CLASSES = [
+  "border-violet-300 bg-violet-100 text-violet-900 dark:border-violet-800 dark:bg-violet-950/50 dark:text-violet-100",
+  "border-rose-300 bg-rose-100 text-rose-900 dark:border-rose-800 dark:bg-rose-950/50 dark:text-rose-100",
+  "border-amber-300 bg-amber-100 text-amber-900 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-100",
+  "border-teal-300 bg-teal-100 text-teal-900 dark:border-teal-800 dark:bg-teal-950/50 dark:text-teal-100",
+  "border-fuchsia-300 bg-fuchsia-100 text-fuchsia-900 dark:border-fuchsia-800 dark:bg-fuchsia-950/50 dark:text-fuchsia-100",
+  "border-cyan-300 bg-cyan-100 text-cyan-900 dark:border-cyan-800 dark:bg-cyan-950/50 dark:text-cyan-100",
+  "border-orange-300 bg-orange-100 text-orange-900 dark:border-orange-800 dark:bg-orange-950/50 dark:text-orange-100",
+  "border-indigo-300 bg-indigo-100 text-indigo-900 dark:border-indigo-800 dark:bg-indigo-950/50 dark:text-indigo-100",
+];
+
+const PARTICIPANT_CSS_COLORS = [
+  "#8b5cf6", // violet
+  "#f43f5e", // rose
+  "#f59e0b", // amber
+  "#14b8a6", // teal
+  "#a855f7", // fuchsia
+  "#06b6d4", // cyan
+  "#f97316", // orange
+  "#6366f1", // indigo
+];
+
+const SELF_CSS_COLOR = "#10b981"; // emerald
+
+function clientIdColorIndex(clientId: string): number {
+  let hash = 0;
+  for (let i = 0; i < clientId.length; i++) {
+    hash = ((hash << 5) - hash + clientId.charCodeAt(i)) >>> 0;
+  }
+  return hash % PARTICIPANT_COLOR_CLASSES.length;
+}
+
+function summarizeParticipants(participants: CollabParticipant[], currentClientId: string) {
+  const entries: PresenceEntry[] = [];
   for (const participant of participants) {
-    const key = participant.userId || participant.clientId;
-    const existing = grouped.get(key);
-    if (existing) {
-      existing.tabCount += 1;
-      continue;
-    }
-    const isSelf = !!currentUsername && participant.userId === currentUsername;
-    grouped.set(key, {
-      userId: key,
-      label: isSelf ? `${participant.userId} (you)` : participant.userId,
-      tabCount: 1,
+    const isSelf = !!currentClientId && participant.clientId === currentClientId;
+    const initial = (participant.userId.charAt(0) || "?").toUpperCase();
+    const colorIdx = clientIdColorIndex(participant.clientId);
+    entries.push({
+      clientId: participant.clientId,
+      userId: participant.userId,
+      label: isSelf ? "You" : participant.userId,
+      initial,
       isSelf,
+      colorClass: isSelf
+        ? "border-emerald-300 bg-emerald-100 text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-100"
+        : PARTICIPANT_COLOR_CLASSES[colorIdx],
+      cssColor: isSelf ? SELF_CSS_COLOR : PARTICIPANT_CSS_COLORS[colorIdx],
     });
   }
-  const entries = Array.from(grouped.values()).sort((left, right) => {
-    if (left.isSelf !== right.isSelf) return left.isSelf ? -1 : 1;
-    return left.label.localeCompare(right.label);
+  entries.sort((a, b) => {
+    if (a.isSelf !== b.isSelf) return a.isSelf ? -1 : 1;
+    return a.userId.localeCompare(b.userId);
   });
   return {
     entries,

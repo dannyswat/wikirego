@@ -14,6 +14,7 @@ const (
 	MessageTypeError    = "error"
 	MessageTypePing     = "ping"
 	MessageTypePong     = "pong"
+	MessageTypeCursor   = "cursor"
 
 	PatchKindText = "text"
 	PatchKindSet  = "set"
@@ -69,16 +70,29 @@ type AppliedPatch struct {
 }
 
 type ClientEnvelope struct {
-	Type  string `json:"type"`
-	Patch *Patch `json:"patch,omitempty"`
+	Type   string          `json:"type"`
+	Patch  *Patch          `json:"patch,omitempty"`
+	Cursor *CursorPosition `json:"cursor,omitempty"`
 }
 
 type ServerEnvelope struct {
-	Type         string        `json:"type"`
-	Snapshot     *Snapshot     `json:"snapshot,omitempty"`
-	Patch        *AppliedPatch `json:"patch,omitempty"`
-	Participants []Participant `json:"participants,omitempty"`
-	Message      string        `json:"message,omitempty"`
+	Type         string          `json:"type"`
+	Snapshot     *Snapshot       `json:"snapshot,omitempty"`
+	Patch        *AppliedPatch   `json:"patch,omitempty"`
+	Participants []Participant   `json:"participants,omitempty"`
+	Message      string          `json:"message,omitempty"`
+	Cursor       *CursorPosition `json:"cursor,omitempty"`
+}
+
+// CursorPosition carries a collaborator's cursor location within the page.
+type CursorPosition struct {
+	ClientID string `json:"clientId"`
+	UserID   string `json:"userId"`
+	Field    string `json:"field"`
+	// Character offset for plain-text fields (title, url, shortDesc).
+	Position int `json:"position,omitempty"`
+	// Top-level block index for the content field.
+	BlockIndex int `json:"blockIndex,omitempty"`
 }
 
 func clonePage(page *pages.Page) *pages.Page {

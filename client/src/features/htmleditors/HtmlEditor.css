@@ -3,6 +3,27 @@
   position: relative;
 }
 
+/* Remote cursor block highlight */
+.editor-input > [data-collab-users] {
+  position: relative;
+}
+
+.editor-input > [data-collab-users]::after {
+  content: attr(data-collab-users);
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 0.6rem;
+  line-height: 1.2;
+  background: var(--cursor-color, #6366f1);
+  color: white;
+  padding: 1px 5px;
+  border-radius: 0 0 0 4px;
+  pointer-events: none;
+  opacity: 0.85;
+  white-space: nowrap;
+}
+
 .html-editor-wrapper.html-editor-fullscreen {
   position: fixed;
   top: 0;

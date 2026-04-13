@@ -141,6 +141,12 @@ func (c *Connection) readLoop() {
 				continue
 			}
 			c.session.BroadcastPatch(applied)
+		case MessageTypeCursor:
+			if envelope.Cursor != nil {
+				envelope.Cursor.ClientID = c.ID
+				envelope.Cursor.UserID = c.UserID
+				c.session.BroadcastCursorExcept(c.ID, envelope.Cursor)
+			}
 		case MessageTypePong:
 			_ = c.conn.SetReadDeadline(time.Now().Add(pongWait))
 		}

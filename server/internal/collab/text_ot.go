@@ -12,18 +12,26 @@ import (
 
 var ErrPatchConflict = errors.New("collaboration patch conflict")
 
+// runeLen returns the number of Unicode codepoints in s.
+// JavaScript sends string offsets as UTF-16 code-unit indices; for all BMP
+// characters (including CJK) one codepoint == one UTF-16 unit, so counting
+// runes on the Go side gives the correct correspondence.
+func runeLen(s string) int { return len([]rune(s)) }
+
 func applyTextPatch(current string, patch *Patch) (string, error) {
-	if patch.Start < 0 || patch.Start > len(current) {
+	runes := []rune(current)
+	deleteRunes := []rune(patch.DeleteText)
+	if patch.Start < 0 || patch.Start > len(runes) {
 		return "", fmt.Errorf("invalid patch start")
 	}
-	end := patch.Start + len(patch.DeleteText)
-	if end > len(current) {
+	end := patch.Start + len(deleteRunes)
+	if end > len(runes) {
 		return "", fmt.Errorf("invalid patch range")
 	}
-	if current[patch.Start:end] != patch.DeleteText {
+	if string(runes[patch.Start:end]) != patch.DeleteText {
 		return "", ErrPatchConflict
 	}
-	return current[:patch.Start] + patch.InsertText + current[end:], nil
+	return string(runes[:patch.Start]) + patch.InsertText + string(runes[end:]), nil
 }
 
 func transformTextPatch(incoming *Patch, applied *AppliedPatch) (*Patch, error) {
@@ -32,14 +40,18 @@ func transformTextPatch(incoming *Patch, applied *AppliedPatch) (*Patch, error) 
 		return patch, nil
 	}
 
-	appliedStart := applied.Start
-	appliedEnd := applied.Start + len(applied.DeleteText)
-	incomingEnd := patch.Start + len(patch.DeleteText)
-	delta := len(applied.InsertText) - len(applied.DeleteText)
+	appliedDeleteLen := runeLen(applied.DeleteText)
+	appliedInsertLen := runeLen(applied.InsertText)
+	incomingDeleteLen := runeLen(patch.DeleteText)
 
-	if len(applied.DeleteText) == 0 && len(patch.DeleteText) == 0 && appliedStart == patch.Start {
+	appliedStart := applied.Start
+	appliedEnd := applied.Start + appliedDeleteLen
+	incomingEnd := patch.Start + incomingDeleteLen
+	delta := appliedInsertLen - appliedDeleteLen
+
+	if appliedDeleteLen == 0 && incomingDeleteLen == 0 && appliedStart == patch.Start {
 		if applied.ID < patch.ID {
-			patch.Start += len(applied.InsertText)
+			patch.Start += appliedInsertLen
 		}
 		return patch, nil
 	}

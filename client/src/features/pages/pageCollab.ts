@@ -2,8 +2,10 @@ import { baseApiUrl } from "../../common/baseApi";
 import type { PageRequest } from "./pageApi";
 import type {
   AppliedCollabPatch,
+  CollabCursorPosition,
   CollabPatch,
   CollabParticipant,
+  CollabRemoteCursor,
   CollabServerEnvelope,
   CollabSnapshot,
   CollabStatus,
@@ -36,17 +38,19 @@ export function buildCollabPage(page: Partial<PageRequest> & { id: number }): Pa
 export function createTextPatch(field: TextField, before: string, after: string, baseVersion: number): TextCollabPatch | null {
   if (before === after) return null;
 
+  const beforeRunes = toRunes(before);
+  const afterRunes = toRunes(after);
   let prefix = 0;
-  const maxPrefix = Math.min(before.length, after.length);
-  while (prefix < maxPrefix && before[prefix] === after[prefix]) {
+  const maxPrefix = Math.min(beforeRunes.length, afterRunes.length);
+  while (prefix < maxPrefix && beforeRunes[prefix] === afterRunes[prefix]) {
     prefix += 1;
   }
 
   let suffix = 0;
-  const maxSuffix = Math.min(before.length - prefix, after.length - prefix);
+  const maxSuffix = Math.min(beforeRunes.length - prefix, afterRunes.length - prefix);
   while (
     suffix < maxSuffix &&
-    before[before.length - 1 - suffix] === after[after.length - 1 - suffix]
+    beforeRunes[beforeRunes.length - 1 - suffix] === afterRunes[afterRunes.length - 1 - suffix]
   ) {
     suffix += 1;
   }
@@ -57,8 +61,8 @@ export function createTextPatch(field: TextField, before: string, after: string,
     field,
     baseVersion,
     start: prefix,
-    deleteText: before.slice(prefix, before.length - suffix),
-    insertText: after.slice(prefix, after.length - suffix),
+    deleteText: beforeRunes.slice(prefix, beforeRunes.length - suffix || undefined).join(''),
+    insertText: afterRunes.slice(prefix, afterRunes.length - suffix || undefined).join(''),
   };
 }
 
@@ -161,6 +165,7 @@ export class PageCollabClient {
       onSnapshot: (snapshot: CollabSnapshot) => void;
       onPatch: (patch: AppliedCollabPatch) => void;
       onPresence: (participants: CollabParticipant[]) => void;
+      onCursor: (cursor: CollabRemoteCursor) => void;
       onError: (message: string, snapshot?: CollabSnapshot) => void;
       onStatus: (status: CollabStatus) => void;
     }
@@ -186,6 +191,9 @@ export class PageCollabClient {
           break;
         case "presence":
           this.handlers.onPresence(envelope.participants ?? []);
+          break;
+        case "cursor":
+          if (envelope.cursor) this.handlers.onCursor(envelope.cursor);
           break;
         case "error":
           this.handlers.onError(envelope.message ?? "Collaboration error", envelope.snapshot);
@@ -227,6 +235,11 @@ export class PageCollabClient {
     return true;
   }
 
+  sendCursor(cursor: CollabCursorPosition): void {
+    if (!this.socket || this.socket.readyState !== WebSocket.OPEN) return;
+    this.socket.send(JSON.stringify({ type: "cursor", cursor }));
+  }
+
   private scheduleReconnect() {
     if (this.reconnectTimer !== null) return;
     this.reconnectTimer = window.setTimeout(() => {
@@ -250,15 +263,24 @@ function createPatchId(): string {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
+// Split a string into an array of Unicode code points (runes).
+// Mirrors Go's []rune so that patch offsets are consistent between
+// the JS client and the Go server for all Unicode characters,
+// including supplementary-plane characters (emoji, etc.) which are
+// 2 UTF-16 code units in JS but a single rune in Go.
+function toRunes(s: string): string[] { return [...s]; }
+
 function applyTextPatch(current: string, start: number, deleteText: string, insertText: string): string {
-  const end = start + deleteText.length;
-  if (start < 0 || end > current.length) {
+  const currentRunes = toRunes(current);
+  const deleteRunes = toRunes(deleteText);
+  const end = start + deleteRunes.length;
+  if (start < 0 || end > currentRunes.length) {
     throw new Error("Invalid text patch range");
   }
-  if (current.slice(start, end) !== deleteText) {
+  if (currentRunes.slice(start, end).join('') !== deleteText) {
     throw new Error("Text patch conflict");
   }
-  return current.slice(0, start) + insertText + current.slice(end);
+  return currentRunes.slice(0, start).join('') + insertText + currentRunes.slice(end).join('');
 }
 
 function applyHtmlPatch(current: string, patch: HtmlCollabPatch): string {
@@ -348,23 +370,25 @@ function createSafeInlineHtmlPatch(beforeBlock: string, afterBlock: string): { s
 
 function diffStrings(before: string, after: string): { start: number; deleteText: string; insertText: string } | null {
   if (before === after) return null;
+  const beforeRunes = toRunes(before);
+  const afterRunes = toRunes(after);
   let start = 0;
-  const maxPrefix = Math.min(before.length, after.length);
-  while (start < maxPrefix && before[start] === after[start]) {
+  const maxPrefix = Math.min(beforeRunes.length, afterRunes.length);
+  while (start < maxPrefix && beforeRunes[start] === afterRunes[start]) {
     start += 1;
   }
   let suffix = 0;
-  const maxSuffix = Math.min(before.length - start, after.length - start);
+  const maxSuffix = Math.min(beforeRunes.length - start, afterRunes.length - start);
   while (
     suffix < maxSuffix &&
-    before[before.length - 1 - suffix] === after[after.length - 1 - suffix]
+    beforeRunes[beforeRunes.length - 1 - suffix] === afterRunes[afterRunes.length - 1 - suffix]
   ) {
     suffix += 1;
   }
   return {
     start,
-    deleteText: before.slice(start, before.length - suffix),
-    insertText: after.slice(start, after.length - suffix),
+    deleteText: beforeRunes.slice(start, beforeRunes.length - suffix || undefined).join(''),
+    insertText: afterRunes.slice(start, afterRunes.length - suffix || undefined).join(''),
   };
 }
 
@@ -383,4 +407,82 @@ function getRootTagName(block: string): string | null {
 
 function containsMarkup(value: string): boolean {
   return value.includes("<") || value.includes(">");
+}
+
+/**
+ * Transform a remote text patch to apply correctly on top of a locally-applied
+ * pending patch (client-side OT, mirrors the server's transformTextPatch).
+ * Returns the adjusted patch, or null if there is an irrecoverable conflict.
+ */
+export function transformRemoteTextPatch(
+  remote: TextCollabPatch,
+  pending: TextCollabPatch
+): TextCollabPatch | null {
+  if (remote.field !== pending.field) return remote;
+
+  const pendingDeleteLen = toRunes(pending.deleteText).length;
+  const pendingInsertLen = toRunes(pending.insertText).length;
+  const remoteDeleteLen = toRunes(remote.deleteText).length;
+  const pendingEnd = pending.start + pendingDeleteLen;
+  const remoteEnd = remote.start + remoteDeleteLen;
+  const delta = pendingInsertLen - pendingDeleteLen;
+
+  // Both are pure inserts at the same position – tie-break by patch ID
+  if (pending.deleteText === "" && remote.deleteText === "" && pending.start === remote.start) {
+    if (pending.id < remote.id) {
+      return { ...remote, start: remote.start + pendingInsertLen };
+    }
+    return { ...remote };
+  }
+
+  // Pending is entirely before remote – shift remote right by the net change
+  if (pendingEnd <= remote.start) {
+    return { ...remote, start: remote.start + delta };
+  }
+
+  // Remote is entirely before pending – no position adjustment needed
+  if (remoteEnd <= pending.start) {
+    return { ...remote };
+  }
+
+  // Overlapping edits – irrecoverable conflict
+  return null;
+}
+
+/**
+ * Transform a remote HTML-block patch to apply correctly on top of a
+ * locally-applied pending HTML patch. Returns null on conflict.
+ */
+export function transformRemoteHtmlPatch(
+  remote: HtmlCollabPatch,
+  pending: HtmlCollabPatch
+): HtmlCollabPatch | null {
+  const pendingEnd = pending.blockIndex + pending.beforeBlocks.length;
+  const remoteEnd = remote.blockIndex + remote.beforeBlocks.length;
+  const delta = pending.afterBlocks.length - pending.beforeBlocks.length;
+
+  // Both are pure inserts at the same block position – tie-break by patch ID
+  if (
+    pending.beforeBlocks.length === 0 &&
+    remote.beforeBlocks.length === 0 &&
+    pending.blockIndex === remote.blockIndex
+  ) {
+    if (pending.id < remote.id) {
+      return { ...remote, blockIndex: remote.blockIndex + pending.afterBlocks.length };
+    }
+    return { ...remote };
+  }
+
+  // Pending entirely before remote – shift remote block index right
+  if (pendingEnd <= remote.blockIndex) {
+    return { ...remote, blockIndex: remote.blockIndex + delta };
+  }
+
+  // Remote entirely before pending – no adjustment needed
+  if (remoteEnd <= pending.blockIndex) {
+    return { ...remote };
+  }
+
+  // Overlapping block ranges – conflict
+  return null;
 }

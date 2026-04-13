@@ -3,7 +3,6 @@ import { LexicalComposer } from '@lexical/react/LexicalComposer'
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
 import { ContentEditable } from '@lexical/react/LexicalContentEditable'
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin'
-import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin'
 import { ListPlugin } from '@lexical/react/LexicalListPlugin'
 import { LinkPlugin } from '@lexical/react/LexicalLinkPlugin'
 import { TablePlugin } from '@lexical/react/LexicalTablePlugin'
@@ -15,7 +14,7 @@ import { LinkNode, AutoLinkNode } from '@lexical/link'
 import { TableNode, TableCellNode, TableRowNode } from '@lexical/table'
 import { CodeNode, CodeHighlightNode, registerCodeHighlighting } from '@lexical/code'
 import { $generateHtmlFromNodes, $generateNodesFromDOM } from '@lexical/html'
-import { $getRoot, $insertNodes, TextNode, $nodesOfType, type EditorState, type LexicalEditor } from 'lexical'
+import { $getRoot, $getSelection, $isRangeSelection, $insertNodes, TextNode, $nodesOfType, type LexicalEditor } from 'lexical'
 import ToolbarPlugin from './plugins/ToolbarPlugin'
 import TableActionMenuPlugin from './plugins/TableActionMenuPlugin'
 import ImagePlugin from './plugins/ImagePlugin'
@@ -33,8 +32,16 @@ if (!(globalThis as { Prism?: typeof Prism }).Prism) {
 
 export interface HtmlEditorRef {
   resetContent: (html: string) => void
+  updateHtml: (html: string) => void
   insertImage: (src: string, altText?: string) => void
   replaceImageSrc: (oldSrc: string, newSrc: string) => void
+}
+
+export interface RemoteCursor {
+  clientId: string
+  label: string
+  color: string
+  blockIndex: number
 }
 
 interface HtmlEditorProps {
@@ -45,6 +52,8 @@ interface HtmlEditorProps {
   onOpenImageBrowser?: () => void
   onOpenDiagram?: (imageUrl?: string) => void
   onOpenDataModel?: (imageUrl?: string) => void
+  remoteCursors?: RemoteCursor[]
+  onCursorBlockChange?: (blockIndex: number | null) => void
 }
 
 // Plugin to expose imperative handle for resetting content
@@ -56,14 +65,18 @@ function ResetContentPlugin({ onResetRef }: { onResetRef: (resetFn: (html: strin
       editor.update(() => {
         const root = $getRoot()
         root.clear()
-        
+
         if (html) {
           const parser = new DOMParser()
           const dom = parser.parseFromString(html, 'text/html')
           const nodes = $generateNodesFromDOM(editor, dom)
-          $insertNodes(nodes)
+          // After root.clear() the selection is gone, so $insertNodes has no
+          // anchor to work from.  Append directly to root instead.
+          for (const node of nodes) {
+            root.append(node)
+          }
         }
-      })
+      }, { tag: 'collab-reset' })
     }
 
     onResetRef(resetContent)
@@ -98,29 +111,126 @@ function LoadInitialContentPlugin({ value }: { value: string }) {
       const dom = parser.parseFromString(value, 'text/html')
       const nodes = $generateNodesFromDOM(editor, dom)
       root.clear()
-      $insertNodes(nodes)
+      for (const node of nodes) {
+        root.append(node)
+      }
       hasLoadedInitialContent.current = true
-    })
+    }, { tag: 'collab-reset' })
   }, [editor, value])
 
   return null
 }
 
-// Plugin to sync HTML changes
+// Plugin to sync HTML changes. Skips updates tagged 'collab-reset' (remote
+// resets applied imperatively) so they never surface as local user edits.
 function HtmlChangePlugin({ onChange }: { onChange: (html: string) => void }) {
   const [editor] = useLexicalComposerContext()
 
-  const handleChange = useCallback(
-    (editorState: EditorState) => {
+  useEffect(() => {
+    return editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves, tags }) => {
+      // Ignore remote-reset updates — they are applied imperatively and must
+      // not be treated as local changes.
+      if (tags.has('collab-reset') || tags.has('remote-update')) return
+      // Ignore selection-only changes (no content was modified).
+      if (dirtyElements.size === 0 && dirtyLeaves.size === 0) return
       editorState.read(() => {
         const html = $generateHtmlFromNodes(editor, null)
         onChange(html)
       })
-    },
-    [editor, onChange]
-  )
+    })
+  }, [editor, onChange])
 
-  return <OnChangePlugin onChange={handleChange} ignoreSelectionChange />
+  return null
+}
+
+// Plugin that fires a callback whenever the user's cursor moves to a different top-level block.
+function CursorTrackerPlugin({ onBlockChange }: { onBlockChange: (blockIndex: number | null) => void }) {
+  const [editor] = useLexicalComposerContext()
+  const lastBlockRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    return editor.registerUpdateListener(({ editorState }) => {
+      editorState.read(() => {
+        const selection = $getSelection()
+        if (!$isRangeSelection(selection)) {
+          if (lastBlockRef.current !== null) {
+            lastBlockRef.current = null
+            onBlockChange(null)
+          }
+          return
+        }
+        const root = $getRoot()
+        const children = root.getChildren()
+        const anchor = selection.anchor.getNode()
+        let topLevel = anchor
+        while (topLevel.getParent() !== null && topLevel.getParent() !== root) {
+          topLevel = topLevel.getParent()!
+        }
+        const idx = children.indexOf(topLevel)
+        const blockIndex = idx >= 0 ? idx : null
+        if (blockIndex !== lastBlockRef.current) {
+          lastBlockRef.current = blockIndex
+          onBlockChange(blockIndex)
+        }
+      })
+    })
+  }, [editor, onBlockChange])
+
+  return null
+}
+
+// Plugin that styles blocks with remote-cursor highlights based on block index.
+function RemoteCursorPlugin({ cursors }: { cursors: RemoteCursor[] }) {
+  const [editor] = useLexicalComposerContext()
+  const cursorsRef = useRef(cursors)
+  cursorsRef.current = cursors
+
+  const applyStyles = useCallback(() => {
+    const root = editor.getRootElement()
+    if (!root) return
+    const blocks = Array.from(root.children) as HTMLElement[]
+
+    // Clear previous decoration
+    for (const block of blocks) {
+      block.style.removeProperty('border-left')
+      block.style.removeProperty('padding-left')
+      block.style.removeProperty('box-sizing')
+      block.style.removeProperty('--cursor-color')
+      block.removeAttribute('data-collab-users')
+    }
+
+    // Group cursors by block index
+    const byBlock = new Map<number, RemoteCursor[]>()
+    for (const c of cursorsRef.current) {
+      const existing = byBlock.get(c.blockIndex) ?? []
+      existing.push(c)
+      byBlock.set(c.blockIndex, existing)
+    }
+
+    for (const [blockIdx, cs] of byBlock) {
+      const block = blocks[blockIdx]
+      if (!block) continue
+      block.style.borderLeft = `3px solid ${cs[0].color}`
+      block.style.paddingLeft = '6px'
+      block.style.boxSizing = 'border-box'
+      block.style.setProperty('--cursor-color', cs[0].color)
+      block.setAttribute('data-collab-users', cs.map((c) => c.label).join(', '))
+    }
+  }, [editor])
+
+  // Re-apply after every editor update (content may have changed block count)
+  useEffect(() => {
+    return editor.registerUpdateListener(() => {
+      applyStyles()
+    })
+  }, [editor, applyStyles])
+
+  // Apply immediately when cursors prop changes
+  useEffect(() => {
+    applyStyles()
+  }, [cursors, applyStyles])
+
+  return null
 }
 
 function CodeHighlightingPlugin() {
@@ -203,7 +313,7 @@ function onError(error: Error) {
 }
 
 const HtmlEditor = forwardRef<HtmlEditorRef, HtmlEditorProps>(
-  ({ value, onChange, placeholder = 'Enter description...', minHeight = '200px', onOpenImageBrowser, onOpenDiagram, onOpenDataModel }, ref) => {
+  ({ value, onChange, placeholder = 'Enter description...', minHeight = '200px', onOpenImageBrowser, onOpenDiagram, onOpenDataModel, remoteCursors = [], onCursorBlockChange }, ref) => {
     const [isFullscreen, setIsFullscreen] = useState(false)
     const [showPasteMarkdown, setShowPasteMarkdown] = useState(false)
 
@@ -262,6 +372,23 @@ const HtmlEditor = forwardRef<HtmlEditorRef, HtmlEditorProps>(
             const imageNode = $createImageNode({ src, altText: altText || '' })
             $insertNodes([imageNode])
           })
+        }
+      },
+      updateHtml: (html: string) => {
+        const editor = editorInstanceRef.current
+        if (editor) {
+          editor.update(() => {
+            const root = $getRoot()
+            root.clear()
+            if (html) {
+              const parser = new DOMParser()
+              const dom = parser.parseFromString(html, 'text/html')
+              const nodes = $generateNodesFromDOM(editor, dom)
+              for (const node of nodes) {
+                root.append(node)
+              }
+            }
+          }, { tag: 'remote-update' })
         }
       },
       replaceImageSrc: (oldSrc: string, newSrc: string) => {
@@ -323,6 +450,12 @@ const HtmlEditor = forwardRef<HtmlEditorRef, HtmlEditorProps>(
               <HtmlChangePlugin onChange={onChange} />
               <ResetContentPlugin onResetRef={handleResetRef} />
               <EditorRefPlugin editorRefCallback={handleEditorRef} />
+              {onCursorBlockChange && (
+                <CursorTrackerPlugin onBlockChange={onCursorBlockChange} />
+              )}
+              {remoteCursors.length > 0 && (
+                <RemoteCursorPlugin cursors={remoteCursors} />
+              )}
             </div>
           </div>
         </LexicalComposer>
