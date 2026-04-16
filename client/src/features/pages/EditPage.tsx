@@ -21,17 +21,12 @@ import MenuButton from "../layout/MenuButton";
 import { useAutoSaveStore } from "../editors/AutoSaveStore";
 import { useTranslation } from "react-i18next";
 import {
-  applyPatchToPage,
   buildCollabPage,
-  createHtmlPatch,
-  createScalarPatch,
-  createTextPatch,
   normalizeHtmlFragment,
   PageCollabClient,
-  transformRemoteHtmlPatch,
-  transformRemoteTextPatch,
+  shouldRestoreAutoSaveDraft,
 } from "./pageCollab";
-import type { AppliedCollabPatch, CollabCursorPosition, CollabParticipant, CollabPatch, CollabRemoteCursor, CollabStatus, HtmlCollabPatch, TextCollabPatch } from "./pageCollabTypes";
+import type { CollabCursorPosition, CollabParticipant, CollabRemoteCursor, CollabSnapshot, CollabStatus } from "./pageCollabTypes";
 
 export default function EditPage() {
   const { t } = useTranslation();
@@ -52,14 +47,7 @@ export default function EditPage() {
     sortChildrenDesc: false,
   }));
   const collabClientRef = useRef<PageCollabClient | null>(null);
-  const currentVersionRef = useRef(0);
-  const currentClientIdRef = useRef("");
-  const sharedPageRef = useRef<PageRequest | null>(null);
   const dataRef = useRef<PageRequest>(data);
-  const pendingPatchIdRef = useRef<string | null>(null);
-  const flushTimerRef = useRef<number>(0);
-  const pendingPatchObjectRef = useRef<CollabPatch | null>(null);
-  const needsResyncRef = useRef(false);
   const cursorThrottleRef = useRef<number>(0);
   const lastEditorHtmlRef = useRef<string>("");
   const [isDiagramModalOpen, setIsDiagramModalOpen] = useState(false);
@@ -128,9 +116,10 @@ export default function EditPage() {
     try {
       if (saved) {
         const { page, expire } = JSON.parse(saved) as AutoSavePageRequest;
-        if (expire > Date.now()) {
+        if (expire > Date.now() && shouldRestoreAutoSaveDraft(page)) {
           return page;
         }
+        localStorage.removeItem(localStorageKey);
       }
     } catch {
       // ignore parse error
@@ -182,30 +171,6 @@ export default function EditPage() {
     dataRef.current = data;
   }, [data]);
 
-  const flushLocalChanges = useCallback(() => {
-    const client = collabClientRef.current;
-    const shared = sharedPageRef.current;
-    const local = dataRef.current;
-    if (!client || !shared || pendingPatchIdRef.current) return;
-
-    const nextPatch = buildNextPatch(shared, local, currentVersionRef.current);
-    if (!nextPatch) return;
-
-    pendingPatchIdRef.current = nextPatch.id;
-    pendingPatchObjectRef.current = nextPatch;
-    if (!client.sendPatch(nextPatch)) {
-      pendingPatchIdRef.current = null;
-      pendingPatchObjectRef.current = null;
-    }
-  }, []);
-
-  const replaceEditorContent = useCallback((content: string) => {
-    const normalizedIncoming = normalizeHtmlFragment(content);
-    if (normalizeHtmlFragment(lastEditorHtmlRef.current) === normalizedIncoming) return;
-    lastEditorHtmlRef.current = content;
-    editorRef.current?.resetContent(content);
-  }, []);
-
   const updateEditorContent = useCallback((content: string) => {
     const normalizedIncoming = normalizeHtmlFragment(content);
     if (normalizeHtmlFragment(lastEditorHtmlRef.current) === normalizedIncoming) return;
@@ -213,149 +178,54 @@ export default function EditPage() {
     editorRef.current?.updateHtml(content);
   }, []);
 
-  const applySnapshot = useCallback((page: PageRequest, version: number, nextParticipants: CollabParticipant[], clientId?: string) => {
-    currentVersionRef.current = version;
-    currentClientIdRef.current = clientId ?? currentClientIdRef.current;
-    if (clientId) setCurrentClientId(clientId);
-    sharedPageRef.current = page;
-    pendingPatchIdRef.current = null;
-    pendingPatchObjectRef.current = null;
-    needsResyncRef.current = false;
+  const applyPageState = useCallback((page: PageRequest, source: "local" | "remote" = "local") => {
     dataRef.current = page;
-    setParticipants(nextParticipants);
     setData(page);
-    replaceEditorContent(page.content);
-  }, [replaceEditorContent]);
-
-  const handleAppliedPatch = useCallback((patch: AppliedCollabPatch) => {
-    const shared = sharedPageRef.current ?? dataRef.current;
-    let nextShared: PageRequest;
-    try {
-      nextShared = applyPatchToPage(shared, patch);
-    } catch {
-      return;
+    if (source === "remote") {
+      updateEditorContent(page.content);
     }
-
-    sharedPageRef.current = nextShared;
-    currentVersionRef.current = patch.version;
-
-    const isOwnPatch =
-      patch.clientId === currentClientIdRef.current ||
-      pendingPatchIdRef.current === patch.id;
-
-    if (isOwnPatch) {
-      if (pendingPatchIdRef.current === patch.id) {
-        pendingPatchIdRef.current = null;
-        pendingPatchObjectRef.current = null;
-        if (needsResyncRef.current) {
-          // A prior conflict was deferred — reconnect now to get a clean snapshot.
-          needsResyncRef.current = false;
-          const client = collabClientRef.current;
-          if (client) {
-            client.disconnect();
-            window.setTimeout(() => client.connect(), 100);
-          }
-          return;
-        }
-      }
-      flushLocalChanges();
-      return;
-    }
-
-    // Transform the incoming remote patch so it applies correctly on top of
-    // our locally-applied pending patch (client-side OT).
-    let patchForLocal: AppliedCollabPatch = patch;
-    const pending = pendingPatchObjectRef.current;
-    if (pending) {
-      if (patch.kind === "text" && pending.kind === "text") {
-        const transformed = transformRemoteTextPatch(
-          patch as unknown as TextCollabPatch,
-          pending as TextCollabPatch
-        );
-        if (transformed === null) {
-          // Irrecoverable overlap — resync after our pending patch is acknowledged.
-          needsResyncRef.current = true;
-          return;
-        }
-        patchForLocal = { ...patch, ...transformed } as AppliedCollabPatch;
-      } else if (patch.kind === "html" && pending.kind === "html") {
-        const transformed = transformRemoteHtmlPatch(
-          patch as unknown as HtmlCollabPatch,
-          pending as HtmlCollabPatch
-        );
-        if (transformed === null) {
-          needsResyncRef.current = true;
-          return;
-        }
-        patchForLocal = { ...patch, ...transformed } as AppliedCollabPatch;
-      }
-    }
-
-    try {
-      const nextLocal = applyPatchToPage(dataRef.current, patchForLocal);
-      dataRef.current = nextLocal;
-      setData(nextLocal);
-      if (patch.field === "content") {
-        updateEditorContent(nextLocal.content);
-      }
-    } catch {
-      if (pendingPatchObjectRef.current) {
-        // Can't safely merge while we have unacknowledged changes — defer resync.
-        needsResyncRef.current = true;
-      } else {
-        dataRef.current = nextShared;
-        setData(nextShared);
-        if (patch.field === "content") {
-          updateEditorContent(nextShared.content);
-        }
-      }
-    }
-
-    flushLocalChanges();
-  }, [flushLocalChanges, replaceEditorContent, updateEditorContent]);
+  }, [updateEditorContent]);
 
   useEffect(() => {
-    if (initialData && !autoSaveData) {
-      const page = buildCollabPage(initialData);
-      sharedPageRef.current = page;
-      dataRef.current = page;
-      lastEditorHtmlRef.current = page.content;
-      setData(page);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialData]);
-
-  useEffect(() => {
-    if (autoSaveData) {
-      dataRef.current = autoSaveData;
-      lastEditorHtmlRef.current = autoSaveData.content;
-      setData(autoSaveData);
-    }
-  }, [autoSaveData]);
+    const page = initialData
+      ? buildCollabPage(initialData)
+      : (autoSaveData && shouldRestoreAutoSaveDraft(autoSaveData) ? buildCollabPage(autoSaveData) : undefined);
+    if (!page) return;
+    dataRef.current = page;
+    lastEditorHtmlRef.current = page.content;
+    setData(page);
+  }, [autoSaveData, initialData]);
 
   useEffect(() => {
     if (!initialData?.id) return;
 
-    const client = new PageCollabClient(initialData.id, {
-      onSnapshot: (snapshot) => {
-        applySnapshot(buildCollabPage(snapshot.page), snapshot.version, snapshot.participants ?? [], snapshot.clientId);
+    const startingPage = buildCollabPage(initialData);
+    applyPageState(startingPage);
+    lastEditorHtmlRef.current = startingPage.content;
+
+    const client = new PageCollabClient(initialData.id, startingPage, {
+      onSnapshot: (snapshot: CollabSnapshot) => {
+        if (snapshot.clientId) {
+          setCurrentClientId(snapshot.clientId);
+        }
+        setParticipants(snapshot.participants ?? []);
       },
-      onPatch: handleAppliedPatch,
-      onPresence: (nextParticipants) => {
+      onPageChange: (page: PageRequest, source: "local" | "remote") => {
+        applyPageState(page, source);
+      },
+      onPresence: (nextParticipants: CollabParticipant[]) => {
         setParticipants(nextParticipants);
         const activeIds = new Set(nextParticipants.map((p) => p.clientId));
         setRemoteCursors((prev) => prev.filter((c) => activeIds.has(c.clientId)));
       },
-      onCursor: (cursor) => {
+      onCursor: (cursor: CollabRemoteCursor) => {
         setRemoteCursors((prev) => [
           ...prev.filter((c) => c.clientId !== cursor.clientId),
           cursor,
         ]);
       },
-      onError: (_message, snapshot) => {
-        if (snapshot) {
-          applySnapshot(buildCollabPage(snapshot.page), snapshot.version, snapshot.participants ?? [], snapshot.clientId);
-        }
+      onError: (message: string) => {
+        console.error(message);
       },
       onStatus: setCollabStatus,
     });
@@ -364,22 +234,21 @@ export default function EditPage() {
     client.connect();
 
     return () => {
-      window.clearTimeout(flushTimerRef.current);
       window.clearTimeout(cursorThrottleRef.current);
       collabClientRef.current = null;
-      pendingPatchIdRef.current = null;
-      pendingPatchObjectRef.current = null;
-      needsResyncRef.current = false;
-      currentClientIdRef.current = "";
       setCurrentClientId("");
       setParticipants([]);
       setRemoteCursors([]);
       client.disconnect();
     };
-  }, [applySnapshot, handleAppliedPatch, initialData?.id]);
+  }, [applyPageState, autoSaveData, initialData]);
 
   useEffect(() => {
     if (!isAutoSaveEnabled) {
+      localStorage.removeItem(localStorageKey);
+      return;
+    }
+    if (!shouldRestoreAutoSaveDraft(data, initialData)) {
       localStorage.removeItem(localStorageKey);
       return;
     }
@@ -388,36 +257,38 @@ export default function EditPage() {
       expire: Date.now() + 1000 * 60 * 60 * 24, // 24 hours
     };
     localStorage.setItem(localStorageKey, JSON.stringify(saveData));
-  }, [data, localStorageKey, isAutoSaveEnabled]);
+  }, [data, initialData, localStorageKey, isAutoSaveEnabled]);
 
   const handleContentChange = useCallback((content: string) => {
-    // Track the latest HTML seen from the editor so the guard in
-    // replaceEditorContent can detect real changes on the next remote patch.
     lastEditorHtmlRef.current = content;
     if (content === dataRef.current.content) return;
-    const nextPage = { ...dataRef.current, content };
-    dataRef.current = nextPage;
-    setData(nextPage);
-    window.clearTimeout(flushTimerRef.current);
-    flushTimerRef.current = window.setTimeout(flushLocalChanges, 300);
-  }, [flushLocalChanges]);
+    const client = collabClientRef.current;
+    if (!client) {
+      applyPageState({ ...dataRef.current, content });
+      return;
+    }
+    client.updateContent(content);
+  }, [applyPageState]);
 
   if (isLoading) return <div>{t('Loading...')}</div>;
   if (isError) return <div>{t('Page not found')}</div>;
 
-  function updateLocalPage(nextPage: PageRequest) {
-    dataRef.current = nextPage;
-    setData(nextPage);
-    window.clearTimeout(flushTimerRef.current);
-    flushTimerRef.current = window.setTimeout(flushLocalChanges, 300);
-  }
-
   function updateTextField(field: "title" | "url" | "shortDesc", value: string) {
-    updateLocalPage({ ...dataRef.current, [field]: value });
+    const client = collabClientRef.current;
+    if (!client) {
+      applyPageState({ ...dataRef.current, [field]: value } as PageRequest);
+      return;
+    }
+    client.updateTextField(field, value);
   }
 
   function updateScalarField(field: "parentId" | "isProtected" | "isPinned" | "isCategoryPage" | "sortChildrenDesc", value: number | boolean | null) {
-    updateLocalPage({ ...dataRef.current, [field]: value } as PageRequest);
+    const client = collabClientRef.current;
+    if (!client) {
+      applyPageState({ ...dataRef.current, [field]: value } as PageRequest);
+      return;
+    }
+    client.updateScalarField(field, value);
   }
 
   function handleSubmitClick(e: MouseEvent<HTMLButtonElement>) {
@@ -427,8 +298,19 @@ export default function EditPage() {
 
   async function loadLastRevision() {
     const revision = await getLatestPageRevisionByUrl(data.id);
-    if (revision) setData(revision.record);
-    else alert(t('No revision available'));
+    if (!revision) {
+      alert(t('No revision available'));
+      return;
+    }
+    const page = buildCollabPage(revision.record);
+    lastEditorHtmlRef.current = page.content;
+    const client = collabClientRef.current;
+    if (!client) {
+      applyPageState(page);
+      editorRef.current?.resetContent(page.content);
+      return;
+    }
+    client.replacePage(page);
   }
 
   function handleInsertImage(imageUrl: string) {
@@ -721,36 +603,4 @@ function summarizeParticipants(participants: CollabParticipant[], currentClientI
 interface AutoSavePageRequest {
   page: PageRequest;
   expire: number;
-}
-
-function buildNextPatch(shared: PageRequest, local: PageRequest, baseVersion: number): CollabPatch | null {
-  const titlePatch = createTextPatch("title", shared.title, local.title, baseVersion);
-  if (titlePatch) return titlePatch;
-
-  const urlPatch = createTextPatch("url", shared.url, local.url, baseVersion);
-  if (urlPatch) return urlPatch;
-
-  const shortDescPatch = createTextPatch("shortDesc", shared.shortDesc, local.shortDesc, baseVersion);
-  if (shortDescPatch) return shortDescPatch;
-
-  const contentPatch = createHtmlPatch(shared.content, local.content, baseVersion);
-  if (contentPatch) return contentPatch;
-
-  if (shared.parentId !== local.parentId) {
-    return createScalarPatch("parentId", local.parentId, baseVersion);
-  }
-  if (shared.isProtected !== local.isProtected) {
-    return createScalarPatch("isProtected", local.isProtected, baseVersion);
-  }
-  if (shared.isPinned !== local.isPinned) {
-    return createScalarPatch("isPinned", local.isPinned, baseVersion);
-  }
-  if (shared.isCategoryPage !== local.isCategoryPage) {
-    return createScalarPatch("isCategoryPage", local.isCategoryPage, baseVersion);
-  }
-  if (shared.sortChildrenDesc !== local.sortChildrenDesc) {
-    return createScalarPatch("sortChildrenDesc", local.sortChildrenDesc, baseVersion);
-  }
-
-  return null;
 }

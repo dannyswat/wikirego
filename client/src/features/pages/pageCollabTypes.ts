@@ -2,6 +2,8 @@ import type { PageRequest } from "./pageApi";
 
 export type CollabStatus = "connecting" | "connected" | "reconnecting" | "disconnected";
 
+export type CollabPageChangeSource = "local" | "remote";
+
 export interface CollabParticipant {
   clientId: string;
   userId: string;
@@ -9,70 +11,32 @@ export interface CollabParticipant {
 
 export interface CollabSnapshot {
   page: Partial<PageRequest> & { id: number };
-  version: number;
   clientId?: string;
   participants?: CollabParticipant[];
+  shouldSeed?: boolean;
   generatedAt: string;
 }
 
-export interface TextCollabPatch {
-  id: string;
-  kind: "text";
-  field: "title" | "url" | "shortDesc";
-  baseVersion: number;
-  start: number;
-  deleteText: string;
-  insertText: string;
+export interface CollabDocumentMessage {
+  update: string;
+  targetClientId?: string;
+  fullState?: boolean;
 }
-
-export interface ScalarCollabPatch {
-  id: string;
-  kind: "set";
-  field:
-    | "parentId"
-    | "isProtected"
-    | "isPinned"
-    | "isCategoryPage"
-    | "sortChildrenDesc";
-  baseVersion: number;
-  value: number | boolean | null;
-}
-
-export interface HtmlCollabPatch {
-  id: string;
-  kind: "html";
-  field: "content";
-  baseVersion: number;
-  blockIndex: number;
-  beforeBlocks: string[];
-  afterBlocks: string[];
-  htmlStart?: number;
-  htmlDeleteText?: string;
-  htmlInsertText?: string;
-}
-
-export type CollabPatch = TextCollabPatch | ScalarCollabPatch | HtmlCollabPatch;
-
-export type AppliedCollabPatch = CollabPatch & {
-  version: number;
-  clientId: string;
-  userId: string;
-  appliedAt: string;
-};
 
 export interface CollabClientEnvelope {
-  type: "patch" | "pong" | "cursor";
-  patch?: CollabPatch;
+  type: "document" | "pong" | "cursor";
+  document?: CollabDocumentMessage;
   cursor?: CollabCursorPosition;
 }
 
 export interface CollabServerEnvelope {
-  type: "snapshot" | "patch" | "presence" | "error" | "cursor";
+  type: "snapshot" | "document" | "presence" | "error" | "cursor" | "sync-request";
   snapshot?: CollabSnapshot;
-  patch?: AppliedCollabPatch;
+  document?: CollabDocumentMessage;
   participants?: CollabParticipant[];
   message?: string;
   cursor?: CollabRemoteCursor;
+  requesterClientId?: string;
 }
 
 export interface CollabCursorPosition {

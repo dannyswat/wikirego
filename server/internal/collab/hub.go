@@ -3,6 +3,7 @@ package collab
 import (
 	"encoding/json"
 	"net/http"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -20,14 +21,16 @@ const (
 
 type Hub struct {
 	pageService *pages.PageService
+	stateStore  *StateStore
 
 	mu       sync.Mutex
 	sessions map[int]*Session
 }
 
-func NewHub(pageService *pages.PageService) *Hub {
+func NewHub(pageService *pages.PageService, dataPath string) *Hub {
 	return &Hub{
 		pageService: pageService,
+		stateStore:  NewStateStore(filepath.Join(dataPath, "collab")),
 		sessions:    make(map[int]*Session),
 	}
 }
@@ -44,7 +47,12 @@ func (h *Hub) Session(pageID int) (*Session, error) {
 	if err != nil {
 		return nil, err
 	}
-	session := NewSession(page, h.removeSession)
+	if h.stateStore != nil {
+		_ = h.stateStore.Clear(pageID)
+	}
+	// Relay-only mode: start every fresh session from the current DB page and
+	// keep collaboration state in memory while editors are connected.
+	session := NewSession(page, nil, nil, h.removeSession)
 
 	h.mu.Lock()
 	defer h.mu.Unlock()
@@ -59,6 +67,30 @@ func (h *Hub) removeSession(pageID int) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	delete(h.sessions, pageID)
+}
+
+func (h *Hub) ResetPageState(page *pages.Page) error {
+	if page == nil {
+		return nil
+	}
+	h.mu.Lock()
+	session := h.sessions[page.ID]
+	h.mu.Unlock()
+	if session != nil {
+		session.ResetPage(page)
+		return nil
+	}
+	return h.stateStore.Clear(page.ID)
+}
+
+func (h *Hub) DeletePageState(pageID int) error {
+	if err := h.stateStore.Clear(pageID); err != nil {
+		return err
+	}
+	h.mu.Lock()
+	delete(h.sessions, pageID)
+	h.mu.Unlock()
+	return nil
 }
 
 type Connection struct {
@@ -76,19 +108,21 @@ func NewConnection(userID string, conn *websocket.Conn, session *Session) *Conne
 		UserID:  userID,
 		conn:    conn,
 		session: session,
-		send:    make(chan []byte, 32),
+		send:    make(chan []byte, 256),
 	}
 }
 
 func (c *Connection) Run() {
 	c.session.Register(c)
 	defer c.Close()
+	go c.writeLoop()
 
 	if err := c.session.SendSnapshot(c); err != nil {
 		return
 	}
-
-	go c.writeLoop()
+	if err := c.session.SendPersistedDocuments(c); err != nil {
+		return
+	}
 	c.readLoop()
 }
 
@@ -130,17 +164,8 @@ func (c *Connection) readLoop() {
 			return
 		}
 		switch envelope.Type {
-		case MessageTypePatch:
-			applied, err := c.session.ApplyPatch(c.ID, c.UserID, envelope.Patch)
-			if err != nil {
-				_ = c.SendEnvelope(&ServerEnvelope{
-					Type:     MessageTypeError,
-					Message:  err.Error(),
-					Snapshot: c.session.Snapshot(c.ID),
-				})
-				continue
-			}
-			c.session.BroadcastPatch(applied)
+		case MessageTypeDocument:
+			c.session.RelayDocument(c.ID, envelope.Document)
 		case MessageTypeCursor:
 			if envelope.Cursor != nil {
 				envelope.Cursor.ClientID = c.ID

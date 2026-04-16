@@ -120,7 +120,7 @@ func (s *WikiStartUp) Setup() error {
 		RevisionService: s.pageRevisionService,
 		SearchService:   s.searchService,
 	}
-	s.collabHub = collab.NewHub(s.pageService)
+	s.collabHub = collab.NewHub(s.pageService, s.DataPath)
 
 	err = s.keyStore.Init()
 	if err != nil {
@@ -145,7 +145,7 @@ func (s *WikiStartUp) Setup() error {
 	fido2ID := siteSetting.SiteURL
 	fido2Host := siteSetting.SiteURL
 	if perr == nil && parsedURL.Host != "" {
-		fido2ID = parsedURL.Host
+		fido2ID = parsedURL.Hostname()
 		fido2Host = parsedURL.Scheme + "://" + parsedURL.Host
 	}
 
@@ -177,6 +177,7 @@ func (s *WikiStartUp) RegisterHandlers(e *echo.Echo) {
 		SearchService:       s.searchService,
 		HtmlPolicy:          s.htmlPolicy,
 		PageRevisionService: s.pageRevisionService,
+		CollabHub:           s.collabHub,
 		ReactPage:           s.reactPage,
 	}
 	s.pageCollabHandler = handlers.NewPageCollabHandler(s.collabHub)

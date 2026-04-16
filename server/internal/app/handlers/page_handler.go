@@ -4,6 +4,7 @@ import (
 	"log"
 	"strconv"
 
+	"wikirego/internal/collab"
 	"wikirego/internal/common/apihelper"
 	"wikirego/internal/common/errors"
 	"wikirego/internal/pages"
@@ -18,6 +19,7 @@ type PageHandler struct {
 	PageService         *pages.PageService
 	SearchService       *pages.SearchService
 	PageRevisionService *revisions.RevisionService[*pages.Page]
+	CollabHub           *collab.Hub
 	HtmlPolicy          *bluemonday.Policy
 	ReactPage           *pages.ReactPageMeta
 }
@@ -200,6 +202,11 @@ func (h *PageHandler) UpdatePage(e echo.Context) error {
 	if err := h.PageService.UpdatePage(page, apihelper.GetUserId(e)); err != nil {
 		return apihelper.ReturnErrorResponse(e, err)
 	}
+	if h.CollabHub != nil {
+		if err := h.CollabHub.ResetPageState(page); err != nil {
+			return apihelper.ReturnErrorResponse(e, err)
+		}
+	}
 	return e.JSON(200, req)
 }
 
@@ -211,6 +218,11 @@ func (h *PageHandler) DeletePage(e echo.Context) error {
 	}
 	if err := h.PageService.DeletePage(id); err != nil {
 		return apihelper.ReturnErrorResponse(e, err)
+	}
+	if h.CollabHub != nil {
+		if err := h.CollabHub.DeletePageState(id); err != nil {
+			return apihelper.ReturnErrorResponse(e, err)
+		}
 	}
 	return apihelper.OkMessage(e, "page deleted")
 }
