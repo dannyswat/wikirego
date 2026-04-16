@@ -1,6 +1,6 @@
 import type { PageRequest } from "./pageApi";
 
-export type CollabStatus = "connecting" | "connected" | "reconnecting" | "disconnected";
+export type CollabStatus = "connecting" | "connected" | "reconnecting" | "disconnected" | "disabled";
 
 export type CollabPageChangeSource = "local" | "remote";
 

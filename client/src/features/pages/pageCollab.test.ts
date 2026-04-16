@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { PageRequest } from './pageApi';
-import { shouldRestoreAutoSaveDraft } from './pageCollab';
+import { isCollaborationEnabled, shouldRestoreAutoSaveDraft } from './pageCollab';
 
 const serverPage: PageRequest = {
   id: 14,
@@ -15,6 +15,14 @@ const serverPage: PageRequest = {
   isCategoryPage: false,
   sortChildrenDesc: false,
 };
+
+describe('isCollaborationEnabled', () => {
+  it('returns true only when the site setting explicitly enables collaboration', () => {
+    expect(isCollaborationEnabled({ enable_collaboration: true } as any)).toBe(true);
+    expect(isCollaborationEnabled({ enable_collaboration: false } as any)).toBe(false);
+    expect(isCollaborationEnabled(undefined)).toBe(false);
+  });
+});
 
 describe('shouldRestoreAutoSaveDraft', () => {
   it('rejects the blank placeholder draft created before page data loads', () => {

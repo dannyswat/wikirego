@@ -7,6 +7,7 @@ export interface Setting {
     footer: string;
     language: string;
     is_site_protected: boolean;
+    enable_collaboration: boolean;
 }
 
 interface SettingResponse {

@@ -46,6 +46,10 @@ export function normalizeHtmlFragment(fragment: string): string {
   return container.innerHTML;
 }
 
+export function isCollaborationEnabled(setting?: { enable_collaboration?: boolean } | null): boolean {
+  return setting?.enable_collaboration === true;
+}
+
 export function shouldRestoreAutoSaveDraft(
   page: Partial<PageRequest> | undefined | null,
   expectedPage?: Partial<PageRequest> | null,

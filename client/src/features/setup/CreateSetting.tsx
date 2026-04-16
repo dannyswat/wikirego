@@ -11,6 +11,7 @@ export default function CreateSetting() {
         footer: "All rights reserved © wiki rego",
         language: "en",
         is_site_protected: false,
+        enable_collaboration: false,
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -27,12 +28,12 @@ export default function CreateSetting() {
         setSuccess(null);
         try {
             await createSetting(form);
-            setSuccess("Setting created successfully.");
-            setForm({ site_name: "", logo: "", theme: "", footer: "", language: "", is_site_protected: false });
+            setSuccess(t('Setting created successfully.'));
+            setForm({ site_name: "", logo: "", theme: "", footer: "", language: "", is_site_protected: false, enable_collaboration: false });
             await new Promise(resolve => setTimeout(resolve, 2000));
             window.location.replace('/');
         } catch (err: any) {
-            setError(err.message || "Failed to create setting.");
+            setError(err.message || t('Failed to create setting.'));
         } finally {
             setLoading(false);
         }
@@ -108,6 +109,16 @@ export default function CreateSetting() {
                                 className="mr-2 h-4 w-4 rounded border-slate-300 text-[#2d6880] focus:ring-[#92A7B4]/40 dark:border-slate-600"
                             />
                             <label className="text-sm text-slate-600 dark:text-slate-300">{t('Protect Site')}</label>
+                        </div>
+                        <div className="flex items-center">
+                            <input
+                                type="checkbox"
+                                name="enable_collaboration"
+                                checked={form.enable_collaboration}
+                                onChange={(e) => setForm({ ...form, enable_collaboration: e.target.checked })}
+                                className="mr-2 h-4 w-4 rounded border-slate-300 text-[#2d6880] focus:ring-[#92A7B4]/40 dark:border-slate-600"
+                            />
+                            <label className="text-sm text-slate-600 dark:text-slate-300">{t('Enable Collaboration (Allow live collaborative page editing)')}</label>
                         </div>
                         {error && <div className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-700 dark:bg-red-900/20 dark:text-red-300">{error}</div>}
                         {success && <div className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:border-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300">{success}</div>}

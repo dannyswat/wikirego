@@ -191,6 +191,18 @@
         "Protect your Wiki Rego account.": "Wiki Rego アカウントを保護します。",
         "Update your password regularly and manage passkeys for stronger authentication.": "より強力な認証のため、定期的にパスワードを更新しパスキーを管理してください。",
         "Account settings": "アカウント設定",
+        "Enable Collaboration": "共同編集を有効化",
+        "Enable Collaboration (Allow live collaborative page editing)": "共同編集を有効化（ページをリアルタイムで共同編集できます）",
+        "Collaboration disabled in site settings": "サイト設定で共同編集が無効になっています",
+        "Collaboration connected": "共同編集に接続済み",
+        "Collaboration connecting": "共同編集に接続中",
+        "Collaboration reconnecting": "共同編集に再接続中",
+        "Collaboration disconnected": "共同編集から切断されました",
+        "active editor": "人の編集中ユーザー",
+        "active editors": "人の編集中ユーザー",
+        "You": "あなた",
+        "Setting created successfully.": "設定が正常に作成されました。",
+        "Failed to create setting.": "設定の作成に失敗しました。",
         "Dark mode enabled": "ダークモードが有効です",
         "Light mode enabled": "ライトモードが有効です"
     }

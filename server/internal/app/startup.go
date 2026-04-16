@@ -180,7 +180,7 @@ func (s *WikiStartUp) RegisterHandlers(e *echo.Echo) {
 		CollabHub:           s.collabHub,
 		ReactPage:           s.reactPage,
 	}
-	s.pageCollabHandler = handlers.NewPageCollabHandler(s.collabHub)
+	s.pageCollabHandler = handlers.NewPageCollabHandler(s.collabHub, s.settingService)
 	s.authHandler = &handlers.AuthHandler{
 		UserService: s.userService,
 		KeyStore:    s.keyStore,

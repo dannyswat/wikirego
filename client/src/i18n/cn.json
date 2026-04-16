@@ -193,6 +193,18 @@
         "Protect your Wiki Rego account.": "保护您的 Wiki Rego 账户。",
         "Update your password regularly and manage passkeys for stronger authentication.": "定期更新密码并管理通行密钥以获得更强认证能力。",
         "Account settings": "账户设置",
+        "Enable Collaboration": "启用协作",
+        "Enable Collaboration (Allow live collaborative page editing)": "启用协作（允许多人实时共同编辑页面）",
+        "Collaboration disabled in site settings": "站点设置中已禁用协作功能",
+        "Collaboration connected": "协作已连接",
+        "Collaboration connecting": "协作连接中",
+        "Collaboration reconnecting": "协作重连中",
+        "Collaboration disconnected": "协作已断开",
+        "active editor": "位活跃编辑者",
+        "active editors": "位活跃编辑者",
+        "You": "您",
+        "Setting created successfully.": "设置创建成功。",
+        "Failed to create setting.": "设置创建失败。",
         "Dark mode enabled": "已启用深色模式",
         "Light mode enabled": "已启用浅色模式"
     }

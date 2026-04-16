@@ -191,6 +191,18 @@
         "Protect your Wiki Rego account.": "Protégez votre compte Wiki Rego.",
         "Update your password regularly and manage passkeys for stronger authentication.": "Mettez à jour régulièrement votre mot de passe et gérez vos passkeys pour une authentification renforcée.",
         "Account settings": "Paramètres du compte",
+        "Enable Collaboration": "Activer la collaboration",
+        "Enable Collaboration (Allow live collaborative page editing)": "Activer la collaboration (autoriser l’édition collaborative en temps réel des pages)",
+        "Collaboration disabled in site settings": "La collaboration est désactivée dans les paramètres du site",
+        "Collaboration connected": "Collaboration connectée",
+        "Collaboration connecting": "Connexion à la collaboration",
+        "Collaboration reconnecting": "Reconnexion à la collaboration",
+        "Collaboration disconnected": "Collaboration déconnectée",
+        "active editor": "éditeur actif",
+        "active editors": "éditeurs actifs",
+        "You": "Vous",
+        "Setting created successfully.": "Paramètre créé avec succès.",
+        "Failed to create setting.": "Échec de la création du paramètre.",
         "Dark mode enabled": "Mode sombre activé",
         "Light mode enabled": "Mode clair activé"
     }

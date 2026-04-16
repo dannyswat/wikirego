@@ -13,7 +13,7 @@ import DiagramModal from "../editors/DiagramModal";
 import DataModelModal from "../editors/DataModelModal";
 import ImageBrowserModal from "../editors/ImageBrowserModal";
 import { queryClient } from "../../common/query";
-import { useEffect, useState, useRef, MouseEvent, useMemo, useCallback } from "react";
+import { useEffect, useState, useRef, MouseEvent, useMemo, useCallback, useContext } from "react";
 import { clearCache, PageDropDown } from "../editors/PageDropDown";
 import { IconFidgetSpinner } from "@tabler/icons-react";
 import ToggleButton from "../../components/ToggleButton";
@@ -22,14 +22,17 @@ import { useAutoSaveStore } from "../editors/AutoSaveStore";
 import { useTranslation } from "react-i18next";
 import {
   buildCollabPage,
+  isCollaborationEnabled,
   normalizeHtmlFragment,
   PageCollabClient,
   shouldRestoreAutoSaveDraft,
 } from "./pageCollab";
 import type { CollabCursorPosition, CollabParticipant, CollabRemoteCursor, CollabSnapshot, CollabStatus } from "./pageCollabTypes";
+import { SettingContext } from "../setup/SettingProvider";
 
 export default function EditPage() {
   const { t } = useTranslation();
+  const { setting } = useContext(SettingContext);
   const { id } = useParams();
   const pageId = id ? window.location.pathname.substring(6) : "home";
   const { isAutoSaveEnabled } = useAutoSaveStore();
@@ -61,7 +64,12 @@ export default function EditPage() {
   const [dataModelUrl, setDataModelUrl] = useState<string>();
   const localStorageKey = `editPageData_${pageId}`;
   const navigate = useNavigate();
+  const collaborationEnabled = isCollaborationEnabled(setting);
   const presenceSummary = useMemo(() => summarizeParticipants(participants, currentClientId), [participants, currentClientId]);
+  const collaborationStatusLabel = collabStatus === "disabled"
+    ? t('Collaboration disabled in site settings')
+    : t(`Collaboration ${collabStatus}`);
+  const activeEditorsLabel = presenceSummary.totalEditors === 1 ? t('active editor') : t('active editors');
 
   const participantLookup = useMemo(() => {
     const map = new Map<string, { label: string; cssColor: string }>();
@@ -203,6 +211,15 @@ export default function EditPage() {
     applyPageState(startingPage);
     lastEditorHtmlRef.current = startingPage.content;
 
+    if (!collaborationEnabled) {
+      collabClientRef.current = null;
+      setCollabStatus("disabled");
+      setCurrentClientId("");
+      setParticipants([]);
+      setRemoteCursors([]);
+      return;
+    }
+
     const client = new PageCollabClient(initialData.id, startingPage, {
       onSnapshot: (snapshot: CollabSnapshot) => {
         if (snapshot.clientId) {
@@ -241,7 +258,7 @@ export default function EditPage() {
       setRemoteCursors([]);
       client.disconnect();
     };
-  }, [applyPageState, autoSaveData, initialData]);
+  }, [applyPageState, collaborationEnabled, initialData]);
 
   useEffect(() => {
     if (!isAutoSaveEnabled) {
@@ -324,15 +341,17 @@ export default function EditPage() {
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <span className={`inline-block h-2.5 w-2.5 rounded-full ${collabStatus === "connected" ? "bg-emerald-500" : collabStatus === "connecting" ? "bg-amber-500" : collabStatus === "reconnecting" ? "bg-orange-500" : "bg-slate-400"}`} />
-            <span className="font-medium">Collaboration {collabStatus}</span>
-            <span>{presenceSummary.totalEditors} active editor{presenceSummary.totalEditors === 1 ? "" : "s"}</span>
+            <span className="font-medium">{collaborationStatusLabel}</span>
+            {collabStatus !== "disabled" && (
+              <span>{presenceSummary.totalEditors} {activeEditorsLabel}</span>
+            )}
           </div>
           <div className="flex flex-wrap gap-2">
-            {presenceSummary.entries.map((entry) => (
+            {collabStatus !== "disabled" && presenceSummary.entries.map((entry) => (
               <span
                 key={entry.clientId}
                 className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium ${entry.colorClass}`}
-                title={entry.isSelf ? "You" : entry.userId}
+                title={entry.isSelf ? t('You') : entry.userId}
               >
                 <span className="font-bold">{entry.initial}</span>
                 <span>{entry.label}</span>
