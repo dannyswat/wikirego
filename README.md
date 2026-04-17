@@ -122,7 +122,7 @@ This will build (if needed) and start the `wikirego` service, mounting `server/d
 
 ### Prerequisites
 
-- Go 1.21+
+- Go 1.26.2+
 - Node.js 14+ and npm/Yarn
 - Git (if using Go modules from VCS)
 
@@ -196,5 +196,9 @@ TLS_CERT=./cert.pem TLS_KEY=./key.pem PORT=443 ./wikirego
 ---
 
 ## License
+This project is dual-licensed. You may choose either:
 
-This project is released under the GNU General Public License v3.0 (GPL-3.0-only). See [LICENSE](LICENSE) for details.
+- **AGPLv3:** Use and distribute under the terms of the GNU Affero General Public License v3. See [LICENSE](LICENSE) for details and the full terms.
+- **Commercial:** Obtain a commercial license from the copyright holder if you need to avoid AGPL obligations for commercial deployments. For commercial licensing inquiries, please contact the wikirego maintainer at https://github.com/dannyswat/wikirego/issues.
+
+When using this project, pick the license that applies to your situation and follow its terms. If you're unsure, consult legal counsel.
