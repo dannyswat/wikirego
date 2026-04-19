@@ -339,13 +339,11 @@ export default function EditPage() {
     <div className="w-full flex flex-col gap-4">
       <section className="rounded-md border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-900 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-100">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
+          {collabStatus !== "disabled" && <div className="flex items-center gap-3">
             <span className={`inline-block h-2.5 w-2.5 rounded-full ${collabStatus === "connected" ? "bg-emerald-500" : collabStatus === "connecting" ? "bg-amber-500" : collabStatus === "reconnecting" ? "bg-orange-500" : "bg-slate-400"}`} />
             <span className="font-medium">{collaborationStatusLabel}</span>
-            {collabStatus !== "disabled" && (
               <span>{presenceSummary.totalEditors} {activeEditorsLabel}</span>
-            )}
-          </div>
+          </div>}
           <div className="flex flex-wrap gap-2">
             {collabStatus !== "disabled" && presenceSummary.entries.map((entry) => (
               <span
